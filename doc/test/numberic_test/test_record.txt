@@ -1,0 +1,45 @@
+test1:
+data: 8675309
+大小: 7
+
+analyze:
+    numeric modeIndicator: 0001
+    纠正级别:  L
+    version: 7
+
+    version 1- 9 numeric mode character count : 10
+    characterCountIndicator: 0000000111
+
+    // 14 bit
+    modeIndicator + characterCountIndicator: 0001 0000000111
+    // dataBits: build data
+    // 1. 分成3组, 867 , 530 , 9
+    // 2. 转成10,7,4位二进制数组 (剩余1位转4bit, 2位转7bit)
+    // 867     530          9
+    1101100011 1000010010   1001
+    // count: 38
+    modeIndicator + characterCountIndicator + dataBits: 0001 0000000111 1101100011 1000010010 1001
+    // 3. 查找numeric总容量, 添加终止符
+    numeric 总容量(version7,L): 370 dataBitsNum: 1248 , codeword: 156
+    // 需要 1248 - 370 > 0 ,需要添加 4 个终止符,bitCount = 38 + 4 = 42
+    modeIndicator + characterCountIndicator + dataBits + terminator: 0001 0000000111 1101100011 1000010010 1001 0000
+    // 4. 转换为codeword, 需要8的倍数, 42%8=2,需添加 8-2=6个0,后= 48 bits
+    modeIndicator + characterCountIndicator + dataBits + terminator + (补充8的倍数个): 0001 0000000111 1101100011 1000010010 1001 0000 000000
+    // 5. 若不够 numeric 总容量, dataBitsNum: 1248,  则连续填充 Pad Codeword:11101100 00010001
+    //    4.中有48 bits, 需要填充 (1248 - 48)/8 = 150 个PadCodeword
+    // 6. Error Correction Codeword
+       version:7 ,ec:L numeric
+       eccNumber: 40 , group
+       eccPerBlock: 20
+       G1: 2 dcPerBlock: 78
+       G2: 0 dcPerBlock: 0
+
+       finalCodewordsLen := 196
+       dataCodewordsLen := 156
+       errorCodewordsLen := 40
+
+       finalCodewords: 16 236
+
+
+
+
