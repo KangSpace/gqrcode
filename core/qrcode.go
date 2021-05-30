@@ -66,13 +66,13 @@ type DataAnalyzer struct {
 
 // Analyze the input data and determine the smallest version.
 // This is the first step for general a QRCode.
-// Mode select strategy by Page 107(PDF) optimisation of bit stream length. TODO xxx
+// Mode select strategy by Page 107(PDF) optimisation of bit stream length.
 // param: data, not null
 // param: ec, nullable, error correction, if null, choose appropriate ErrorCorrection from H to L with full fill data.
 // param: format, nullable, QRCode Format @see model.Format , default is cons.QrcodeModel2
 // param: mode, nullable, encode mode, if null, choose appropriate encode by data type.
 func (da *DataAnalyzer) analyze(format cons.Format,ec *mode.ErrorCorrection,m mode.Mode) (*model.Version,*mode.ErrorCorrection, mode.Mode, error){
-	// choose mode
+	// Choose mode
 	var err error
 	if m == nil{
 		if m,err = getMode(da.Data);err!=nil{
@@ -85,7 +85,7 @@ func (da *DataAnalyzer) analyze(format cons.Format,ec *mode.ErrorCorrection,m mo
 	if ec != nil{
 		ecLevel = ec.Level
 	}
-	// choose version and error correction level.
+	// Choose version and error correction level.
 	version,ecLevel = model.GetVersionByInputDataLength(format,dataLen,m.GetMode().Name,ecLevel)
 	if ec == nil {
 		ec = mode.NewErrorCorrection(ecLevel)

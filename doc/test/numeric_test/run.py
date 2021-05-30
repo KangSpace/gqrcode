@@ -1,6 +1,10 @@
+#-*- coding: UTF-8 -*-
+import sys
+
+import pyzbar.pyzbar
 import qrcode
 import zxing
-
+from PIL import Image
 
 # 生成7089行的txt文件
 def make_txt():
@@ -34,12 +38,21 @@ def make_qrcode(data, filename):
 
 # 解码
 def get_data(img):
-    img = input("图片路径：")
     reader = zxing.BarCodeReader()
     barcode = reader.decode(img)
     return barcode.parsed
 
 
+def get_data_pyzbar(img):
+    return str(pyzbar.pyzbar.decode(Image.open(img), symbols=[pyzbar.pyzbar.ZBarSymbol.QRCODE])[0].data, 'utf-8')
+
+if __name__ == '__main__':
+    # the first arg is the file name for decode.
+    file_name = sys.argv[1]
+    print(get_data_pyzbar(file_name))
 
 # 安装依赖库
-# pip install qrcode pillow image zxing
+# pip install qrcode pillow image zxing pyzbar
+# mac: brew install zbar
+# linux: yum install zbar-devel
+# ubuntu: sudo apt-get install libzbar-dev

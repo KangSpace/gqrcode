@@ -3,6 +3,7 @@ package output
 import (
 	"errors"
 	"github.com/gqrcode/core/model"
+	"github.com/gqrcode/util/imaging"
 	"image"
 	"image/color"
 	"image/draw"
@@ -15,7 +16,7 @@ import (
 // Define PNG output Here
 
 type ImageOutput struct {
-	image *image.RGBA
+	image *image.NRGBA
 	*BaseOutput
 }
 
@@ -24,6 +25,8 @@ func NewPNGOutput(size int) *ImageOutput{
 	out.initImage(size)
 	return out
 }
+
+// NewPNGOutput0 :Output a new PNG image by auto size.
 func NewPNGOutput0() *ImageOutput{
 	out:= &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: AUTO_SIZE}}
 	return out
@@ -34,6 +37,8 @@ func NewJPGOutput(size int) *ImageOutput{
 	out.initImage(size)
 	return out
 }
+
+// NewJPGOutput0 :Output a new JPG image by auto size.
 func NewJPGOutput0() *ImageOutput{
 	out:= &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: AUTO_SIZE}}
 	return out
@@ -43,6 +48,8 @@ func NewGIFOutput(size int) *ImageOutput{
 	out.initImage(size)
 	return out
 }
+
+// NewGIFOutput0 :Output a new GIF image by auto size.
 func NewGIFOutput0() *ImageOutput{
 	out:= &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: AUTO_SIZE}}
 	return out
@@ -50,7 +57,7 @@ func NewGIFOutput0() *ImageOutput{
 
 func (out *ImageOutput) initImage(size int){
 	// Point range : (0,0),(size-1,size-1)
-	out.image = image.NewRGBA(image.Rect(0,0,size,size))
+	out.image = image.NewNRGBA(image.Rect(0,0,size,size))
 	out.modules = make([][]*bool,size+1)
 	for i := range out.modules{
 		out.modules[i] = make([]*bool, size + 1)
@@ -81,12 +88,11 @@ func (out *ImageOutput) WriteModule(x int,y int, black bool,pixelSize int){
 	if black {
 		setColor = image.Black
 	}
-	out.WriteModuleColor(x,y,setColor,pixelSize)
+	out.WriteModuleColor(x,y,black,setColor,pixelSize)
 }
 
-func (out *ImageOutput) WriteModuleColor(x int,y int, setColor color.Color,pixelSize int){
-	defTrue := true
-	out.modules[x][y] = &defTrue
+func (out *ImageOutput) WriteModuleColor(x int,y int,dark bool,setColor color.Color,pixelSize int){
+	out.modules[x][y] = &dark
 	x = x * pixelSize
 	y = y * pixelSize
 	for i:=0; i<pixelSize; i++{
@@ -96,6 +102,9 @@ func (out *ImageOutput) WriteModuleColor(x int,y int, setColor color.Color,pixel
 	}
 }
 
+func (out *ImageOutput) IsModuleSet(x int,y int) bool{
+	return out.BaseOutput.IsModuleSet(x,y)
+}
 func (out *ImageOutput) GetModule(x int,y int) bool{
 	return out.BaseOutput.GetModule(x,y)
 }
@@ -103,6 +112,7 @@ func (out *ImageOutput) GetModule(x int,y int) bool{
 // Save : save file
 func (out *ImageOutput) Save(fileName string) error{
 	if file,err:= os.Create(fileName);err == nil{
+		defer file.Close()
 		switch out.BaseOutput.Type {
 		case JPG:
 			return jpeg.Encode(file,out.image,nil)
@@ -123,21 +133,41 @@ func (out *ImageOutput) GetBaseOutput() *BaseOutput{
 
 }
 
-func (out *ImageOutput) GetImage() *image.RGBA{
+func (out *ImageOutput) GetImage() *image.NRGBA{
 	return out.image
 }
 
-func (out *ImageOutput) DrawIntoNewImage(minPoint image.Point,maxPoint image.Point){
-	imageSize := out.Size
-	newImg := image.NewRGBA(image.Rect(0,0,imageSize,imageSize))
+func (out *ImageOutput) drawNewImage(minPoint image.Point,maxPoint image.Point,imageSize int){
+	newImg := image.NewNRGBA(image.Rect(0,0,imageSize,imageSize))
 	draw.Draw(newImg,newImg.Bounds(),image.White, image.Pt(0,0), draw.Src)
 	r:= image.Rectangle{Min: minPoint, Max: maxPoint}
 	draw.Draw(newImg,r,out.image,image.Pt(0,0), draw.Over)
 	out.image = newImg
 }
 
-func (out *ImageOutput) Resize(){
+func (out *ImageOutput) drawIntoNewImage(minPoint image.Point,maxPoint image.Point){
+	out.drawNewImage(minPoint,maxPoint,out.Size)
+}
 
+func (out *ImageOutput)	ResizeToFit(moduleSize int, quietZoneSize int, pixelSize int) {
+	modulePixels := moduleSize * pixelSize
+	quietZonePixels := quietZoneSize * pixelSize
+	if out.Size == modulePixels{
+		return
+	}else if out.Size == modulePixels + quietZonePixels{
+		imgX:= quietZonePixels/2 ; imgY := quietZonePixels/2
+		out.drawIntoNewImage(image.Pt(imgX,imgY),image.Point{X: imgX + moduleSize * pixelSize, Y: imgY + moduleSize * pixelSize})
+		return
+	}else {
+		maxImageSize := modulePixels+quietZonePixels
+		imgX := 0; imgY := 0
+		if quietZoneSize > 0{
+			imgX = quietZonePixels/2 ; imgY = quietZonePixels/2
+		}
+		out.drawNewImage(image.Pt(imgX,imgY),image.Point{X: imgX + moduleSize * pixelSize , Y: imgY + moduleSize * pixelSize},maxImageSize)
+		out.image = imaging.Resize(out.image,out.Size)
+	}
+	return
 }
 
 // Clone : Shallow copy BaseOutput and modules from output, init new image instance

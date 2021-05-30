@@ -41,8 +41,8 @@ func (m *AbstractMode) ConvertDataBitsToECBlocks(qr *QRCodeStruct,dataStream *ut
 	// group 2 error block codeword handle
 	for g2i := 0; g2i < ecBlockCapacity.NoECBlocksG2; g2i++ {
 		ecb := new(ECBlock)
-		ecb.DataCodewords = make([]byte, ecBlockCapacity.NoDataCodewordsPerBlockG1)
-		for cw := 0; cw < ecBlockCapacity.NoDataCodewordsPerBlockG1; cw++ {
+		ecb.DataCodewords = make([]byte, ecBlockCapacity.NoDataCodewordsPerBlockG2)
+		for cw := 0; cw < ecBlockCapacity.NoDataCodewordsPerBlockG2; cw++ {
 			ecb.DataCodewords[cw] = <-byteOutChan
 		}
 		ecb.ErrorCorrectionCodewords = ec.CalcECCodewords(ecb.DataCodewords,ecBlockCapacity.NoECCodewordsPerBlock)

@@ -8,7 +8,6 @@ import (
 	"github.com/gqrcode/core/model"
 	"github.com/gqrcode/core/output"
 	"github.com/gqrcode/util"
-	"image"
 	"strconv"
 )
 
@@ -66,7 +65,7 @@ type modeIndicatorDetail struct {
 
 type CountIndicatorBitsNumberDetail struct {
 	Versions []model.VersionId
-	// Defined the bits length , not represent the full bits is max count , max count in Table7
+	// Defined the bits length , not represent the full bits for max count , max count in Table7
 	NumberOfBits int
 	// Max count by NumberOfBits, value is math.Pow(2,NumberOfBits)-1
 }
@@ -243,7 +242,6 @@ func (m *AbstractMode) buildCharacterCountIndicator(qr *QRCodeStruct,dataStream 
 	numberOfBits, modeDataCapacity,numberOfDataBits := m.GetCharacterCountIndicatorBitsNumber(qr)
 	dataLength := len(qr.Data)
 	maxDataCapacity = modeDataCapacity
-	//TODO capacity is or not correct for dataLength ?
 	if dataLength > modeDataCapacity {
 		dataLength = modeDataCapacity
 		qr.Data = qr.Data[:dataLength]
@@ -318,30 +316,28 @@ func (m *AbstractMode) BuildFinalErrorCorrectionCodewords(qr *QRCodeStruct,dataS
 // return: pixelSize, pixel size for per module.
 // return: resize, need or not resize the image.
 // return: quietZonePixels, quiet zone pixels for width/height
-func calculatePixelSizePerModule(imageSize int,moduleSize int,quietZoneSize int) (finalImageSize int,pixelSize int,resize bool,quietZonePixels int){
+func calculatePixelSizePerModule(imageSize int,moduleSize int,quietZoneSize int) (pixelSize int){
 	// Calculate the max pixelSize for per module of QRCode.
 	pixelSize = cons.DefaultPixelSizePerModule
-	resize = false
-	quietZonePixels = 0
+	// image auto
 	if imageSize == output.AUTO_SIZE{
-		finalImageSize = (moduleSize + quietZoneSize * 2) * pixelSize
-		return finalImageSize,pixelSize,false,quietZoneSize * 2 * pixelSize
+		// finalImageSize = (moduleSize + quietZoneSize * 2) * pixelSize
+		// image size is already init in Output.Init()
+		return pixelSize
 	}
-	totalModuleSize := moduleSize + quietZoneSize * 2
+	totalModuleSize := moduleSize + quietZoneSize
 	pixelSize = imageSize / totalModuleSize
 	// Image size can not full the qrcode by single-pixel size
 	if pixelSize < 1{
 		panic(errors.New("image size:"+ strconv.Itoa(imageSize)+" can not accommodate an effective qrcode"))
 	}
-	// Apart from the module content, the rest is all quiet zone
-	if quietZoneSize > 0  {
-		quietZonePixels = imageSize - moduleSize * pixelSize
-	}
-	// imageSize % totalModuleSize >0, qrcode can not full fill image size,may enlarge to image size
-	if imageSize % totalModuleSize > 0{
-		resize = true
-	}
-	return imageSize,pixelSize,resize,quietZonePixels
+	//
+	//// imageSize % totalModuleSize >0, qrcode can not full fill image size,may enlarge to image size
+	//if imageSize % totalModuleSize > 0{
+	//	resize = true
+	//}
+	//return imageSize,pixelSize
+	return pixelSize
 }
 
 // newQRCodeMaskOutputGroup : make a new output group for mask (0-7),
@@ -372,26 +368,27 @@ func selectLowestPenaltyMaskOut(outs []output.Output,moduleSize int) output.Outp
 
 // BuildModuleInMatrix : Page 54,7.7 Codeword placement in matrix
 // Place the codeword modules in the matrix together with the finder pattern,separators,timing pattern,and (if required) alignment patterns.
-func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util.Bit,out output.Output) {
+func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util.Bit,out output.Output) output.Output{
 	version := qr.Version
 	imageSize := out.GetBaseOutput().Size
 	moduleSize := version.GetModuleSize()
-	quietZoneSize := qr.QuietZone.Size
-	imageSize,pixelSize,resize,quietZonePixels := calculatePixelSizePerModule(imageSize,moduleSize,quietZoneSize)
+	quietZoneSize := qr.QuietZone.GetQuietZoneSize()
+	pixelSize := calculatePixelSizePerModule(imageSize,moduleSize,quietZoneSize)
 	maskOutputGroup := newQRCodeMaskOutputGroup(out)
 
 	// output group with mask for common
 	outputGroupOutMask := func(x int,y int ,val bool,hasMask bool) {
 		srcVal := val
 		for i,out_ :=range maskOutputGroup{
+			newVal := srcVal
 			if hasMask{
 				if version.Id >0 {
-					val = getQRCodeMaskVal(x, y, srcVal, i)
+					newVal = getQRCodeMaskVal(x, y, srcVal, i)
 				}else{
-					val = getMircoQRCodeMaskVal(x, y, srcVal, i)
+					newVal = getMircoQRCodeMaskVal(x, y, srcVal, i)
 				}
 			}
-			out_.WriteModule(x,y,val,pixelSize)
+			out_.WriteModule(x,y,newVal,pixelSize)
 		}
 	}
 	// output group no mask for common
@@ -426,18 +423,8 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util
 		out = lowestPenaltyOut
 	}
 	// draw with quiet zone
-	if !resize && quietZonePixels > 0 {
-		imgX:= quietZonePixels/2 ; imgY := quietZonePixels/2
-		out.DrawIntoNewImage(image.Pt(imgX,imgY),image.Point{X: imgX + moduleSize * pixelSize - 1 , Y: imgY + moduleSize * pixelSize -1 })
-	}else if resize{
-
-		out.Resize()
-	}
-}
-
-
-func resizeImage(imageSize int,out output.Output){
-	// TODO resize image
+	out.ResizeToFit(moduleSize,quietZoneSize,pixelSize)
+	return out
 }
 
 func drawDarkBlock(version model.VersionId, outputGroupOut func(x int, y int, val bool)) {
@@ -584,10 +571,10 @@ func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, 
 		for col:=0; col< 6; col++ {
 			// bottom_left
 			//out.WriteModule(col, moduleSize - 8 - 3 + row , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(col, moduleSize - 8 - 3 + row , versionInfoBits[ col * 3 + row] == 1 )
+			outputGroupOut(col, moduleSize - 8 - 3 + row , versionInfoBits[ cons.VersionInformationBitsLen - 1 - (col * 3 + row)] == 1 )
 			// top_right
 			//out.WriteModule(moduleSize - 8 - 3 + row, col , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(moduleSize - 8 - 3 + row, col , versionInfoBits[ col * 3 + row] == 1)
+			outputGroupOut(moduleSize - 8 - 3 + row, col , versionInfoBits[ cons.VersionInformationBitsLen - 1 - (col * 3 + row)] == 1)
 		}
 	}
 }
@@ -596,7 +583,7 @@ func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, 
 // Mask rule in Page 58,7.8 Data Masking.
 func drawData(moduleSize int, codewordsBits []util.Bit, out output.Output, outputGroupOutMask func(x int,y int ,val bool,hasMask bool)) {
 	var moduleBitIdx int
-	for pos := range iterateModulesPlacement(moduleSize,out.GetModule) {
+	for pos := range iterateModulesPlacement(moduleSize,out.IsModuleSet) {
 		var bit bool
 		if moduleBitIdx < len(codewordsBits) {
 			bit = codewordsBits[moduleBitIdx] == 1
@@ -631,7 +618,7 @@ func drawData(moduleSize int, codewordsBits []util.Bit, out output.Output, outpu
 // 4 5
 // 2 3
 // 0 1
-func iterateModulesPlacement(moduleSize int,getModule func(x int,y int) bool) <-chan *model.PositionAxes {
+func iterateModulesPlacement(moduleSize int,isModuleSet func(x int,y int) bool) <-chan *model.PositionAxes {
 	allModuleBitPos := make(chan *model.PositionAxes)
 	go func() {
 		isUpward := true
@@ -669,9 +656,8 @@ func iterateModulesPlacement(moduleSize int,getModule func(x int,y int) bool) <-
 	moduleBitPos := make(chan *model.PositionAxes)
 	go func() {
 		for mb := range allModuleBitPos{
-			// check module is or not set
-			//if !out.GetModule(mb.X,mb.Y){
-			if !getModule(mb.X,mb.Y){
+			// check the module whether or not be set
+			if !isModuleSet(mb.X,mb.Y){
 				moduleBitPos <- mb
 			}
 		}

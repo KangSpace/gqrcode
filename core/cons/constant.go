@@ -1,7 +1,9 @@
 package cons
 
 import (
+	"bufio"
 	"github.com/gqrcode/util"
+	"os"
 )
 
 // ErrorCorrectionLevel : value in (L, M, Q, H, NONE).
@@ -42,7 +44,6 @@ const (
 
 const (
 	// DefaultPixelSizePerModule : default pixel size is 4 pixels for per module(is BaseOutput.Size = AUTO_SIZE)
-	// TODO xx
 	DefaultPixelSizePerModule = 4
 )
 
@@ -54,6 +55,9 @@ var FormatInformationBitsMap = map[ErrorCorrectionLevel]map[int][]util.Bit{
 	Q: {0: {0,1,1,0,1,0,1,0,1,0,1,1,1,1,1},1:{0,1,1,0,0,0,0,0,1,1,0,1,0,0,0},2:{0,1,1,1,1,1,1,0,0,1,1,0,0,0,1},3:{0,1,1,1,0,1,0,0,0,0,0,0,1,1,0},4:{0,1,0,0,1,0,0,1,0,1,1,0,1,0,0},5:{0,1,0,0,0,0,1,1,0,0,0,0,0,1,1},6:{0,1,0,1,1,1,0,1,1,0,1,1,0,1,0},7:{0,1,0,1,0,1,1,1,1,1,0,1,1,0,1}},
 	H: {0: {0,0,1,0,1,1,0,1,0,0,0,1,0,0,1},1:{0,0,1,0,0,1,1,1,0,1,1,1,1,1,0},2:{0,0,1,1,1,0,0,1,1,1,0,0,1,1,1},3:{0,0,1,1,0,0,1,1,1,0,1,0,0,0,0},4:{0,0,0,0,1,1,1,0,1,1,0,0,0,1,0},5:{0,0,0,0,0,1,0,0,1,0,1,0,1,0,1},6:{0,0,0,1,1,0,1,0,0,0,0,1,1,0,0},7:{0,0,0,1,0,0,0,0,0,1,1,1,0,1,1}},
 }
+
+// VersionInformationBitsLen :Version Information bit length.
+const VersionInformationBitsLen = 18
 
 // VersionInformationBitsMap :List of all Version Information Strings
 // struct: {versionId:{info bits array}}
@@ -92,4 +96,16 @@ var VersionInformationBitsMap = map[int][]util.Bit{
 	38:{1,0,0,1,1,0,1,0,1,0,0,1,1,0,0,1,0,0},
 	39:{1,0,0,1,1,1,0,1,0,1,0,1,0,0,0,0,0,1},
 	40:{1,0,1,0,0,0,1,1,0,0,0,1,1,0,1,0,0,1},
+}
+
+var GQRcodeVersion = getGQRCodeVersion
+
+func getGQRCodeVersion() string{
+	pwd ,_:=os.Getwd()
+	versionFile := pwd +"/../../gqrcode.version"
+	if file,err := os.Open(versionFile); err == nil{
+		version,_,_:= bufio.NewReader(file).ReadLine()
+		return string(version)
+	}
+	return ""
 }

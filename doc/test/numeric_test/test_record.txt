@@ -41,5 +41,46 @@ analyze:
        finalCodewords: 16 236
 
 
+test2:
+data: 01234567890.....(7089)
+大小: 7089
 
+analyze:
+    numeric modeIndicator: 0001
+    纠正级别:  L
+    version: 40
 
+    version 27 - 40 numeric mode character count : 14
+        characterCountIndicator: 01101110110001
+    max bit length : 23648
+
+    actually bit length : 23630
+
+test3:
+data: 01234567890.....(1023)
+大小: 1023
+
+    version: 14,ec: L Numeric
+
+    version 10 - 26 numeric mode character count : 12
+
+    terminator bit length : 262
+
+    mode indicator + count indicator + data + terminator :3430
+    mode indicator + count indicator + data + terminator + (补充8的倍数个):3432
+    total : 3688
+    padCodewordsBitLen : 256
+test4:
+data: 01234567890.....(5269)
+大小: 5269
+    version: 35, size:628, ec:L 7% mode:Numeric
+    version 27 - 40 numeric mode character count : 14
+
+    modeDataCapacity: 5529
+    totalDataBits : 18448
+
+    curr: 17586
+    17592
+
+    finalCodeword: 2876
+    finalCodewordDataBits: 2876 * 8 = 23008

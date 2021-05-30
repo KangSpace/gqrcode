@@ -2,10 +2,8 @@ package mode
 
 import (
 	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/core/logger"
 	"github.com/gqrcode/core/model"
 	"github.com/gqrcode/util"
-	"strconv"
 )
 
 // Define Code Words handle
@@ -67,8 +65,8 @@ func (m *AbstractMode) buildDataCodewords(qr *QRCodeStruct,dataStream *util.Data
 	padCodewordsBitLen := numberOfDataBits - dataStreamLen
 	// fill the Pad Codewords
 	if padCodewordsBitLen >0{
-		logger.Info("versionCodewordsHandle fill the Pad Codewords: numberOfDataBits:"+ strconv.Itoa(numberOfDataBits)+
-			" dataStreamLen:"+strconv.Itoa(dataStreamLen)+", data ramin:"+ strconv.Itoa(padCodewordsBitLen%codewordBit))
+		//logger.Info("buildDataCodewords fill the Pad Codewords: numberOfDataBits:"+ strconv.Itoa(numberOfDataBits)+
+		//	" dataStreamLen:"+strconv.Itoa(dataStreamLen)+", data ramin:"+ strconv.Itoa(padCodewordsBitLen%codewordBit))
 		for i:=0;i< padCodewordsBitLen/codewordBit;i++{
 			dataStream.AddBit(PadCodewords[format][i%2] ,codewordBit)
 		}

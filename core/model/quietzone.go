@@ -8,7 +8,7 @@ type QuietZone struct {
 	// Times:
 	// QRCode minimum: 4x
 	// Micro QRCode minimum: 2x
-	Size int `json:"size"`
+	Multiple int `json:"multiple"`
 }
 
 // NewDefaultQuietZone :new default quiet zone by version
@@ -16,20 +16,25 @@ func NewDefaultQuietZone(version *Version) *QuietZone{
 	qz := new(QuietZone)
 	// QRCode
 	if version.Id>0 {
-		qz.Size = 4
+		qz.Multiple = 4
 	}else{
 		// Micro QRCode
-		qz.Size = 2
+		qz.Multiple = 2
 	}
 	return qz
 }
 
 func NewQuietZone(size int) *QuietZone{
-	return &QuietZone{Size: size}
+	return &QuietZone{Multiple: size}
+}
+
+// GetQuietZoneSize :Quiet zone size is QuietZone.Multiple * 2.
+func (qz *QuietZone) GetQuietZoneSize() int{
+	return qz.Multiple * 2
 }
 
 func (qz *QuietZone) GetDefaultPixelSize() int{
-	return qz.Size * cons.DefaultPixelSizePerModule
+	return qz.GetQuietZoneSize() * cons.DefaultPixelSizePerModule
 }
 
 // NoneQuietZone : define quiet zone for zero

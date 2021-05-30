@@ -21,6 +21,7 @@ func TestImageToImg(t *testing.T) {
 		}
 	}
 	file1,_:=os.Create(desktop+"img.png")
+	defer file1.Close()
 	png.Encode(file1,img1)
 
 	img2 := image.NewRGBA(image.Rect(0,0,100,100))
@@ -36,6 +37,7 @@ func TestImageToImg(t *testing.T) {
 	draw.Draw(img2,r,img1,image.Pt(0,0), draw.Src)
 
 	file2,_:=os.Create(desktop+"img2.png")
+	defer file2.Close()
 	png.Encode(file2,img2)
 }
 

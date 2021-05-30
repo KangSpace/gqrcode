@@ -178,7 +178,9 @@
 ## Dependency Package
 1. imaging
 > go get -u github.com/disintegration/imaging
->
+> mkdir $GOPATH/golang.org/x/
+> cd $GOPATH/golang.org/x/
+> git clone https://github.com/golang/image.git
 
 ## Todo list
 
@@ -192,7 +194,7 @@
         <tr >
             <td rowspan="7">QRCode Model2</td>
             <td>Numeric Mode and test</td>
-            <td>-</td>
+            <td>2021-05-30 22:47:57</td>
         </tr>
         <tr>
             <td>Alphanumeric Mode</td>
@@ -224,6 +226,21 @@
         </tr>
         <tr >
             <td >Micro QRCode</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr >
+            <td >
+                Personalized QRCode <br>
+                <span style="font-size: smaller;">add logo image at center of QRCode</span>
+            </td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr >
+            <td >
+                Output SVG
+            </td>
             <td>-</td>
             <td>-</td>
         </tr>

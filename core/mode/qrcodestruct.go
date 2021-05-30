@@ -1,6 +1,8 @@
 package mode
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gqrcode/core/cons"
 	"github.com/gqrcode/core/model"
 	"github.com/gqrcode/core/output"
@@ -70,19 +72,31 @@ type MicroQRCode struct {
 }
 // GetModuleSize :
 func (qr *QRCodeStruct) GetModuleSize() int{
-	return qr.Version.GetModuleSize() + qr.QuietZone.Size
+	return qr.Version.GetModuleSize() + qr.QuietZone.GetQuietZoneSize()
 }
 
 // Encode :
-func (qr *QRCodeStruct) Encode(out output.Output,fileName string) error{
-	qr.BuildQRCode(out)
-	return out.Save(fileName)
+func (qr *QRCodeStruct) Encode(out output.Output,fileName string) (err error){
+	defer func(){
+		if rec := recover(); rec != nil {
+			switch x := rec.(type) {
+			case string:
+				err = errors.New(x)
+			case error:
+				err = x
+			default:
+				err = errors.New(fmt.Sprintf("%v", x))
+			}
+		}
+	}()
+	return qr.buildQRCode(out).Save(fileName)
 }
 
 
 // BuildQRCode : Handle QRCode Data step by step , and write data to out.
 // Core handle entrance.
-func (qr *QRCodeStruct) BuildQRCode(out output.Output){
+// return: output.Output,return the new output by lowestPenaltyOut
+func (qr *QRCodeStruct) buildQRCode(out output.Output) output.Output{
 	if out.GetBaseOutput().Size == output. AUTO_SIZE{
 		out.Init(qr.Version,qr.QuietZone)
 	}
@@ -93,5 +107,5 @@ func (qr *QRCodeStruct) BuildQRCode(out output.Output){
 	// build final message
 	finalMessage := mode.BuildFinalErrorCorrectionCodewords(qr,ds)
 	// draw image
-	mode.BuildModuleInMatrix(qr,finalMessage,out)
+	return mode.BuildModuleInMatrix(qr,finalMessage,out)
 }
