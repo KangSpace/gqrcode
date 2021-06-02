@@ -170,17 +170,23 @@
 
 
 ## Reference
-> 1. QR Code Specification-ISO_IEC_18004-2006.pdf  
-> 2. ISO IEC 18004-2015.pdf
+> 1. ISO IEC 18004-2015.pdf
+> 2. QR Code Specification-ISO_IEC_18004-2006.pdf
 > 3. https://www.thonky.com/qr-code-tutorial/error-correction-coding
 
 
 ## Dependency Package
 1. imaging
 > go get -u github.com/disintegration/imaging
-> mkdir $GOPATH/golang.org/x/
-> cd $GOPATH/golang.org/x/
+
+2. image
+> mkdir $GOPATH/golang.org/x/    
+> cd $GOPATH/golang.org/x/  
 > git clone https://github.com/golang/image.git
+
+3. text
+> cd $GOPATH/golang.org/x/  
+> git clone https://github.com/golang/text.git  
 
 ## Todo list
 
@@ -198,26 +204,26 @@
         </tr>
         <tr>
             <td>Alphanumeric Mode</td>
-            <td>-</td>
+            <td>2021-05-31</td>
         </tr>
         <tr>
             <td>Byte Mode</td>
-            <td>-</td>
+            <td>2021-05-31</td>
         </tr>
         <tr>
             <td>Kanji Mode</td>
-            <td>-</td>
+            <td>2021-06-01</td>
         </tr>
         <tr><td>ECI Mode</td>
-            <td>-</td>
+            <td>NOT-IMPLEMENT</td>
         </tr>
         <tr>
             <td>FNC1 Mode</td>
-            <td>-</td>
+            <td>NOT-IMPLEMENT</td>
         </tr>
         <tr>
             <td>Mixed Mode</td>
-            <td>-</td>
+            <td>NOT-IMPLEMENT</td>
         </tr>
         <tr >
             <td >QRCode Model1</td>
@@ -238,11 +244,15 @@
             <td>-</td>
         </tr>
         <tr >
-            <td >
-                Output SVG
+            <td rowspan="2">
+                Output
             </td>
+            <td>SVG</td>
             <td>-</td>
-            <td>-</td>
+        </tr>
+        <tr >
+            <td>Base64 String</td>
+            <td>2021-06-01</td>
         </tr>
 	</tbody>
 </table>

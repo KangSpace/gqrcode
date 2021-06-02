@@ -1,8 +1,12 @@
 package util
 
 import (
+	"encoding/base64"
 	"errors"
+	"fmt"
+	"os/exec"
 	"sort"
+	"strings"
 )
 
 
@@ -27,7 +31,7 @@ func IntIn(target int, intArray []int) bool {
 }
 
 // IntToBinary : int change to binary array in []byte , array not full 8-bit
-func IntToBinary(i int) []Bit{
+func IntToBinary(i uint16) []Bit{
 	if i < 0 {
 		return nil
 	}
@@ -124,4 +128,92 @@ func ByteArrayTo8BitArrayWithCount(data []byte,bitsCount int) (dataBits []Bit){
 		dataBits = append(dataBits,arr...)
 	}
 	return dataBits
+}
+
+
+func RunCmd(command string,args... string)(result string,err error){
+	defer func() {
+		if rev:=recover();rev!=nil{
+			result = ""
+			err = errors.New("verify error")
+		}
+	}()
+	cmd := exec.Command(command,args...)
+	//show cmd
+	fmt.Println(cmd)
+	if out,err:=cmd.Output();err == nil{
+		o := string(out)
+		if strings.LastIndex(o,"\n")>-1{
+			o = o[:len(o) -1]
+		}
+		return o,err
+	}else{
+		return string(out),err
+	}
+	return result,nil
+}
+
+// IteratorTwoByte : iterate by two-byte
+// param: data,two-byte strings
+func IteratorTwoByte(data string) <-chan uint16 {
+	dataLen := len(data)
+	if dataLen % 2 > 0 {
+		panic(errors.New("NOT Two-byte String! "))
+	}
+	twoByteChain := make(chan uint16)
+	go func() {
+		loop := dataLen/2
+		for i:=0; i<loop;i++ {
+			startIdx := i * 2
+			endIdx:= startIdx + 2
+			if endIdx > dataLen {
+				endIdx = dataLen
+			}
+			twoByte := ([]byte(data))[startIdx:endIdx]
+			twoByteInt :=  uint16(twoByte[0])<<8 | uint16(twoByte[1])
+			twoByteChain<-twoByteInt
+		}
+		close(twoByteChain)
+	}()
+	return twoByteChain
+}
+
+func IteratorTwoByteEach(data string) <-chan []uint16 {
+	dataLen := len(data)
+	if dataLen % 2 > 0 {
+		panic(errors.New("NOT Two-byte String! "))
+	}
+	twoByteChain := make(chan []uint16)
+	go func() {
+		loop := dataLen/2
+		for i:=0; i<loop;i++ {
+			startIdx := i * 2
+			endIdx:= startIdx + 2
+			if endIdx > dataLen {
+				endIdx = dataLen
+			}
+			twoByte := ([]byte(data))[startIdx:endIdx]
+			fmt.Printf("each %v ",twoByte)
+			twoByteChain<-[]uint16{uint16(twoByte[0])<<8,uint16(twoByte[1])}
+		}
+		close(twoByteChain)
+	}()
+	return twoByteChain
+}
+
+type Base64URLImageType string
+const (
+	GifType Base64URLImageType = "gif"
+	PngType Base64URLImageType = "png"
+	JpegType Base64URLImageType = "jpeg"
+	SvgType Base64URLImageType = "svg+xml"
+)
+
+// ImageToBase64Url :
+// data:image/gif;base64, //gif
+// data:image/png;base64, // png
+// data:image/jpeg;base64,//jpeg
+// data:image/svg+xml;base64 //svg
+func ImageToBase64Url(imageType Base64URLImageType,imageByte []byte) string{
+	return "data:image/"+ string(imageType) +";base64,"+base64.StdEncoding.EncodeToString(imageByte)
 }

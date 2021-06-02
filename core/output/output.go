@@ -10,6 +10,13 @@ import (
 // Define Output here
 
 type Type = int
+type OptionName = string
+
+// Option : Output Option
+type Option struct {
+	Name OptionName
+	Value string
+}
 
 // defined OutputType constants
 const (
@@ -17,12 +24,11 @@ const (
 	PNG // 1
 	GIF // 2
 	SVG // 3
-)
 
-
-const (
 	// AUTO_SIZE : set auto size for qrcode , per module fill by 4 pixels
 	AUTO_SIZE = 0
+
+	LogoOptionName OptionName = "logo"
 )
 
 type BaseOutput struct {
@@ -30,7 +36,28 @@ type BaseOutput struct {
 	Type Type
 	// image width/height
 	Size int
+	Options []*Option
 	modules [][]*bool
+}
+
+
+// LogoOption :  Option for add logo image at center of QRCode
+func LogoOption(logoImage string) *Option{
+	return &Option{Name: LogoOptionName,Value: logoImage}
+}
+
+// containLogoOption : Check whether contain LogoOption option or not
+func (out *BaseOutput) containLogoOption() *Option{
+	for _,opt:=range out.Options{
+		if opt.Name == LogoOptionName{
+			return opt
+		}
+	}
+	return nil
+}
+
+func (out *BaseOutput) AddOption(options... *Option){
+	out.Options = append(out.Options,options...)
 }
 
 func (out *BaseOutput) IsModuleSet(x int,y int) bool{
@@ -55,9 +82,10 @@ type Output interface {
 	// GetModule : x,y is module axes , not pixel axes.
 	GetModule(x int,y int) bool
 	GetImage() *image.NRGBA
-	Save(fileName string) error
 	Clone() Output
 	ResizeToFit(moduleSize int,quietZoneSize int,pixelSize int)
+	Save(fileName string) error
+	SaveToBase64() (string,error)
 }
 
 

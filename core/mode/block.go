@@ -22,7 +22,7 @@ type ECBlockList = []*ECBlock
 // Page 52,7.5.2 Generating the error correction codewords
 // struct: {ECBlockList{ DataCodewords:{1,1,1,1},ErrorCorrectionCodewords:{1,1,1,1}}},....}
 func (m *AbstractMode) ConvertDataBitsToECBlocks(qr *QRCodeStruct,dataStream *util.DataStream) ECBlockList {
-	byteOutChan := dataStream.IteratorToByte()
+	byteOutChan := dataStream.IteratorByte()
 	ec := qr.ErrorCorrection
 	versionSymbolCharsAndInputDataCapacity := qr.Version.GetVersionSymbolCharsAndInputDataCapacity(ec.Level)
 	ecBlockCapacity:= versionSymbolCharsAndInputDataCapacity.ErrorCorrectionBlockCapacity

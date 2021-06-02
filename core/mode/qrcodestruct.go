@@ -31,6 +31,7 @@ type QRCodeStruct struct {
 	AlignmentPattern *model.AlignmentPattern `json:"alignmentPattern"`
 	TimingPattern *model.TimingPattern       `json:"timingPattern"`
 	QuietZone *model.QuietZone               `json:"quietZone"`
+	Mask int `json:mask`
 }
 
 // NewQRCodeStruct :create new QRCodeStruct
@@ -75,8 +76,21 @@ func (qr *QRCodeStruct) GetModuleSize() int{
 	return qr.Version.GetModuleSize() + qr.QuietZone.GetQuietZoneSize()
 }
 
+// SetMask :
+func (qr *QRCodeStruct) SetMask(mask int){
+	qr.Mask = mask
+}
+
 // Encode :
 func (qr *QRCodeStruct) Encode(out output.Output,fileName string) (err error){
+	if out_,err :=qr.innerEncode(out);err == nil {
+		return out_.Save(fileName)
+	}else {
+		return err
+	}
+}
+
+func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output,err error){
 	defer func(){
 		if rec := recover(); rec != nil {
 			switch x := rec.(type) {
@@ -89,7 +103,16 @@ func (qr *QRCodeStruct) Encode(out output.Output,fileName string) (err error){
 			}
 		}
 	}()
-	return qr.buildQRCode(out).Save(fileName)
+	return qr.buildQRCode(out),nil
+}
+
+// EncodeToBase64 :
+func (qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string,err error){
+	if out_,err :=qr.innerEncode(out);err == nil {
+		return out_.SaveToBase64()
+	}else {
+		return "",err
+	}
 }
 
 

@@ -58,6 +58,10 @@ func NewQRCode(content string) (*mode.QRCodeStruct,error) {
 	return NewQRCode0(content,"",nil,nil,nil)
 }
 
+func NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error) {
+	return NewQRCode0(content,"",nil,nil,model.AutoQuietZone)
+}
+
 
 // DataAnalyzer : struct for Data Analysis handle
 type DataAnalyzer struct {

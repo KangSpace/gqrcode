@@ -17,3 +17,5 @@ package mode
 type ECI struct {
 	*AbstractMode
 }
+
+// TODO NOT IMPLEMENT

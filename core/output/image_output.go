@@ -1,8 +1,10 @@
 package output
 
 import (
+	"bytes"
 	"errors"
 	"github.com/gqrcode/core/model"
+	"github.com/gqrcode/util"
 	"github.com/gqrcode/util/imaging"
 	"image"
 	"image/color"
@@ -128,6 +130,28 @@ func (out *ImageOutput) Save(fileName string) error{
 	}
 }
 
+func (out *ImageOutput) SaveToBase64() (base64Str string, err error){
+	imageBytes := bytes.NewBuffer(nil)
+	var base64UrlImageType util.Base64URLImageType
+	switch out.BaseOutput.Type {
+	case JPG:
+		err = jpeg.Encode(imageBytes,out.image,nil)
+		base64UrlImageType = util.JpegType
+	case PNG:
+		err = png.Encode(imageBytes,out.image)
+		base64UrlImageType = util.PngType
+	case GIF:
+		err = gif.Encode(imageBytes,out.image,nil)
+		base64UrlImageType = util.GifType
+	default:
+		return "",errors.New("not supported \""+ string(out.BaseOutput.Type)+"\"")
+	}
+	if err != nil {
+		return "",err
+	}
+	return util.ImageToBase64Url(base64UrlImageType,imageBytes.Bytes()),nil
+}
+
 func (out *ImageOutput) GetBaseOutput() *BaseOutput{
 	return out.BaseOutput
 
@@ -142,7 +166,45 @@ func (out *ImageOutput) drawNewImage(minPoint image.Point,maxPoint image.Point,i
 	draw.Draw(newImg,newImg.Bounds(),image.White, image.Pt(0,0), draw.Src)
 	r:= image.Rectangle{Min: minPoint, Max: maxPoint}
 	draw.Draw(newImg,r,out.image,image.Pt(0,0), draw.Over)
+	//logo image handle
+	newImg = out.drawLogoImage(newImg)
 	out.image = newImg
+}
+
+func (out *ImageOutput) drawLogoImage(srcImage *image.NRGBA) *image.NRGBA{
+	logoOption := out.BaseOutput.containLogoOption()
+	if logoOption != nil{
+		logoFilePath := logoOption.Value
+		var logoFile *os.File;var err error
+		if logoFile,err = os.Open(logoFilePath);err != nil {
+			panic(err)
+		}
+		defer logoFile.Close()
+		var logoImg image.Image
+		if logoImg,err =png.Decode(logoFile);err != nil {
+			if logoImg,err =jpeg.Decode(logoFile);err != nil {
+				if logoImg,err =gif.Decode(logoFile);err != nil {
+					panic(err)
+				}
+			}
+		}
+		width := logoImg.Bounds().Dx()
+		height := logoImg.Bounds().Dy()
+		logoSize := width * height
+		remainSize := int(0.1 * float32(out.Size * out.Size))
+		// remain 10%
+		if  remainSize < logoSize {
+			remainRate := float32(remainSize)/float32(logoSize)
+			width = int( float32(width) * remainRate)
+			height = int( float32(height) * remainRate)
+		}
+		x := (out.Size - width) / 2 - 1
+		y := (out.Size - height) /2 - 1
+		logoImg = imaging.Resize0(logoImg,width,height)
+		r:= image.Rectangle{Min: image.Pt(x,y), Max: image.Pt(x+width,y+height)}
+		draw.Draw(srcImage,r,logoImg,image.Pt(0,0), draw.Over)
+	}
+	return srcImage
 }
 
 func (out *ImageOutput) drawIntoNewImage(minPoint image.Point,maxPoint image.Point){
@@ -172,7 +234,7 @@ func (out *ImageOutput)	ResizeToFit(moduleSize int, quietZoneSize int, pixelSize
 
 // Clone : Shallow copy BaseOutput and modules from output, init new image instance
 func (out *ImageOutput) Clone() Output{
-	 clone := &ImageOutput{BaseOutput:&BaseOutput{Type: out.Type,Size: out.Size}}
+	 clone := &ImageOutput{BaseOutput:&BaseOutput{Type: out.Type,Size: out.Size,Options: out.Options}}
 	 clone.initImage(out.Size)
 	return clone
 }

@@ -15,3 +15,5 @@ package mode
 type FNC1 struct {
 	*AbstractMode
 }
+
+// TODO NOT IMPLEMENT

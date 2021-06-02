@@ -15,3 +15,5 @@ package mode
 type StructuredAppend struct {
 	*AbstractMode
 }
+
+// TODO NOT IMPLEMENT

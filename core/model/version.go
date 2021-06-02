@@ -181,9 +181,9 @@ var VersionSymbolCharsAndInputDataCapacityMap = map[VersionId]map[cons.ErrorCorr
 }
 
 func init() {
-	logger.Info("Print Table 7-Number of symbol characters and input data capacity for QR Code " +
-		"and Table 9-Error correction characteristics for QR Code")
-	logger.Info(VersionSymbolCharsAndInputDataCapacityMap)
+	//logger.Info("Print Table 7-Number of symbol characters and input data capacity for QR Code " +
+	//	"and Table 9-Error correction characteristics for QR Code")
+	//logger.Info(VersionSymbolCharsAndInputDataCapacityMap)
 }
 
 // VersionFinalCodewordCapacity :Page 26,Table 1-Codeword capacity of all versions of QR Code
@@ -270,7 +270,8 @@ func GetVersionByInputDataLength(format cons.Format,dataLen int,mode cons.ModeTy
 						return NewVersion(vId),ecLevel
 					}else{
 						if vId == maxVId && ecLevel == cons.L && size < dataLen{
-							panic(errors.New("input data is to long for Mode: "+mode))
+							panic(errors.New("input data is to long for Mode: "+mode+",the max capacity is "+ strconv.Itoa(size)+
+								", your input data length is "+ strconv.Itoa(dataLen)))
 						}
 					}
 				}

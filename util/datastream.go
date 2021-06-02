@@ -39,9 +39,12 @@ func (ds *DataStream) AddBit(b []Bit ,count int){
 	}
 	ds.pushInData(b)
 }
-
 // AddIntBit :Add int to []byte into DataStream
 func (ds *DataStream) AddIntBit(i int ,count int){
+	ds.AddIntBit16(uint16(i),count)
+}
+// AddIntBit16 :Add int to []byte into DataStream
+func (ds *DataStream) AddIntBit16(i uint16 ,count int){
 	if i == 0 && count == 0 {
 		return
 	}
@@ -68,9 +71,9 @@ func (ds *DataStream) Clean(){
 	ds.count = 0
 }
 
-// IteratorToByte :Iterate the data bits to Byte(8-bit).
+// IteratorByte :Iterate the data bits to Byte(8-bit).
 // return byte chan.
-func (ds *DataStream) IteratorToByte() <-chan byte {
+func (ds *DataStream) IteratorByte() <-chan byte {
 	byteOutChan := make(chan byte)
 	go func() {
 		bitsCount := ds.count

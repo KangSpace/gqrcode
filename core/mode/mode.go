@@ -2,7 +2,6 @@ package mode
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gqrcode/core/cons"
 	"github.com/gqrcode/core/logger"
 	"github.com/gqrcode/core/model"
@@ -35,10 +34,9 @@ func(m *AbstractMode) isSupport(data string) bool{
 var SupportModes = []Mode{
 	NewNumericMode(),
 	NewAlphanumericMode(),
+	NewKanjiModeMode(),
+	NewByteModeMode(),
 	//ECI_MODE,
-	//NUMERIC_MODE,
-	//ALPHANUMERIC_MODE,
-	//BYTE_MODE,
 	//KANJI_MODE,
 	//STRUCTUREDAPPEND_MODE,
 	//FNC1_MODE,
@@ -188,6 +186,23 @@ var unionIndicators = []*unionIndicator{
 		{cons.MicroQrcode, model.VERSION_M4, 3, nil}}, nil},
 }
 
+
+func (m *AbstractMode) BuildEncodeData(qr *QRCodeStruct, buildDataBits func(qr *QRCodeStruct,dataStream *util.DataStream) (dataBitLen int)) (dataStream *util.DataStream){
+	dataStream = util.NewDataStream(16)
+	// Mode indicator bits
+	m.buildModeIndicator(qr,dataStream)
+	// Data character count indicator bits
+	_,_,numberOfDataBits := m.buildCharacterCountIndicator(qr,dataStream)
+	// Data bits: implement by various modes
+	buildDataBits(qr,dataStream)
+
+	terminatorBitsLen := numberOfDataBits - dataStream.GetCount()
+	// add Terminator
+	m.buildTerminators(qr,dataStream,terminatorBitsLen)
+	return dataStream
+}
+
+
 // GetModeIndicator :Get Mode Indicator by Iterate ModeIndicators with Mode and Version
 func (m *AbstractMode) GetModeIndicator(qr *QRCodeStruct) *modeIndicatorDetail {
 	mode := m.Name
@@ -252,46 +267,6 @@ func (m *AbstractMode) buildCharacterCountIndicator(qr *QRCodeStruct,dataStream 
 	return numberOfBits,maxDataCapacity,numberOfDataBits
 }
 
-// Page 33,7.4.3 Numeric mode
-// The input data string is `divided into groups of 3(three) digits`, and each group is converted to its `10-bit binary equivalent`.
-// If the number of input digits is not an exact multiple of 3(three),`the final one or two digits are converted to 4 or 7 bits respectively`.
-func (m *AbstractMode) buildDataBits(qr *QRCodeStruct,dataStream *util.DataStream) (dataBitLen int) {
-	inputData := qr.Data
-	dataLen := len(inputData)
-	//dataStream := util.NewDataStream(dataLen)
-
-	// divided into groups of 3(three) digits
-	for i:=0;i<dataLen;i+=3{
-		var group string
-		if i + 3<= dataLen{
-			group = inputData[i:i+3]
-		}else{
-			// the last group
-			group = inputData[i:dataLen]
-		}
-
-		// group is converted to its `10-bit binary equivalent`.
-		bit10, err := strconv.Atoi(group)
-		if err != nil {
-			err := fmt.Errorf("buildDataBits: \"%s\" can not be encoded as %s . %s", inputData, cons.NumericMode,err.Error())
-			logger.Error("buildDataBits: " + err.Error())
-			panic(err)
-		}
-		//
-		groupBitsLen := 10
-		// the final one or two digits are converted to 4 or 7 bits respectively
-		switch len(group) % 3 {
-		case 1:
-			groupBitsLen = 4
-		case 2:
-			groupBitsLen = 7
-		}
-		dataStream.AddIntBit(bit10,groupBitsLen)
-		dataBitLen += groupBitsLen
-	}
-	return dataBitLen
-}
-
 // buildTerminators :build Terminator bits by rules
 func (m *AbstractMode) buildTerminators(qr *QRCodeStruct,dataStream *util.DataStream,fillBitsLen int)( terminatorLen int){
 	if fillBitsLen >0 {
@@ -353,17 +328,18 @@ func newQRCodeMaskOutputGroup(from output.Output) []output.Output {
 
 // selectLowestPenaltyMaskOut :
 // Evaluate mask penalty for mask 0-7 and select the pattern with the lowest penalty points score.
-func selectLowestPenaltyMaskOut(outs []output.Output,moduleSize int) output.Output{
+func selectLowestPenaltyMaskOut(outs []output.Output,moduleSize int) (out output.Output,mask int){
 	lowestPenalty := ^uint(0)
 	var lowestPenaltyOut output.Output = nil
-	for _,out_ := range outs{
+	for i,out_ := range outs{
 		penalty := out_.GetBaseOutput().EvalPenalty(moduleSize)
 		if penalty < lowestPenalty {
 			lowestPenalty = penalty
 			lowestPenaltyOut = out_
+			mask = i
 		}
 	}
-	return lowestPenaltyOut
+	return lowestPenaltyOut,mask
 }
 
 // BuildModuleInMatrix : Page 54,7.7 Codeword placement in matrix
@@ -418,7 +394,8 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util
 	drawData(moduleSize, codewordsBits, out, outputGroupOutMask)
 
 	// evaluate mask penalty for mask 0-7 and select the pattern with the lowest penalty points score.
-	lowestPenaltyOut := selectLowestPenaltyMaskOut(maskOutputGroup,moduleSize)
+	lowestPenaltyOut,mask := selectLowestPenaltyMaskOut(maskOutputGroup,moduleSize)
+	qr.SetMask(mask)
 	if out != lowestPenaltyOut{
 		out = lowestPenaltyOut
 	}
