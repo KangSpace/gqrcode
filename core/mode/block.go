@@ -88,8 +88,15 @@ func (m *AbstractMode) InterleaveECBlocks(qr *QRCodeStruct,ecBlocks ECBlockList)
 			finalCodewords = append(finalCodewords,ecBlocks[row].ErrorCorrectionCodewords[col])
 		}
 	}
+	finalBitsLen := (len(finalCodewords) - 1) * 8
+	if qr.Version.IsMicroQRM1M3Code(){
+		// M1,M3 final codeword is 4-bit long
+		finalBitsLen += MicroQrcodeM1M3CodewordBit
+	}else {
 
-	finalBitsLen := len(finalCodewords) * 8 + reminderBitsLen
+		finalBitsLen += QrcodeCodewordBit
+	}
+	finalBitsLen += reminderBitsLen
 	// convert codewords to bit array and add Remainder bits
 	return util.ByteArrayTo8BitArrayWithCount(finalCodewords,finalBitsLen)
 }

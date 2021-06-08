@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"runtime"
 )
 
 // Define log handle here
@@ -15,5 +16,18 @@ func Info(msg interface{}) {
 }
 
 func Error(msg interface{}){
-	fmt.Println("[ERROR] ", msg)
+	if _,ok:= msg.(error); ok {
+		for i := 1; ; i++ {
+			pc, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
+			f := runtime.FuncForPC(pc)
+			if f.Name() != "runtime.main" && f.Name() != "runtime.goexit" {
+				fmt.Printf("[ERROR] %s %s (%d) %s \n",file,f.Name(), line, msg)
+			}
+		}
+	}else{
+		fmt.Println("[ERROR] ", msg)
+	}
 }

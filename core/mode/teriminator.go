@@ -26,8 +26,11 @@ var VersionTerminatorMap = map[model.VersionId][]byte{
 // The terminator shall be omitted if the data bit stream completely fills the capacity of the symbol,
 //	or abbreviated if the remaining capacity of the symbol is less than the required bit length of Terminator.
 func (m *AbstractMode)GetTerminalBits(version *model.Version) []byte{
-	// version.Id >> 40 to distinguish version all of QR Code or version M1 to M4 of Micro QRCode
-	versionId := version.Id >> 40
+	// version.Id = 0 to distinguish version all of QR Code, -1 to -4 for version M1 to M4 of Micro QRCode
+	versionId := version.Id
+	if !version.IsMicroQRCode() {
+		versionId = model.VERSION_ALL
+	}
 	bits,ok:= VersionTerminatorMap[versionId]
 	if !ok {
 		err:= fmt.Errorf("Can't found Version Terminator info,input version: %s ",version.Name)

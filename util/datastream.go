@@ -75,10 +75,17 @@ func (ds *DataStream) Clean(){
 // return byte chan.
 func (ds *DataStream) IteratorByte() <-chan byte {
 	byteOutChan := make(chan byte)
+	bitLen := 8
 	go func() {
 		bitsCount := ds.count
-		for i:=0; bitsCount > 0 && i<bitsCount; i+=8 {
-			byteOutChan <- Bits8ToByte(ds.data[i:i+8])
+		for i:=0; bitsCount > 0 && i<bitsCount; i+= bitLen {
+			max := i + bitLen
+			if max > bitsCount{
+				max = bitsCount
+				bitLen = max - i
+			}
+
+			byteOutChan <- BitsToByte(ds.data[i:max],bitLen)
 		}
 		close(byteOutChan)
 	}()

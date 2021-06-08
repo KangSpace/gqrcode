@@ -89,7 +89,7 @@ type Output interface {
 }
 
 
-// EvalPenalty :Evaluate Penalty.
+// EvalPenalty :Evaluate Penalty for QRCode.
 // param: moduleSize, not contains quiet zone size.
 func (out *BaseOutput) EvalPenalty(moduleSize int) uint {
 	return out.evalPenaltyRule1(moduleSize) +
@@ -98,7 +98,32 @@ func (out *BaseOutput) EvalPenalty(moduleSize int) uint {
 		out.evalPenaltyRule4(moduleSize)
 }
 
-//TODO need implement Micro QR Code penalty
+// EvalMicroQRCodePenalty :Evaluate Penalty for Micro QRCode.
+// Page 62, 7.8.3.2 Evaluation of Micro QRCode Symbols.
+// if SUM1 <= SUM2
+// 	Evaluation Score = SUM1 x 16 + SUM2
+// if SUM1 > SUM2
+// 	Evaluation Score = SUM2 x 16 + SUM2
+// where:
+//  SUM1 number of dark modules in right side edge
+//  SUM2 number of dark modules in lower side edge
+func (out *BaseOutput) EvalMicroQRCodePenalty(moduleSize int) uint {
+	var sum1,sum2,resultPoint uint
+	for i:=0;i<moduleSize;i++ {
+		if out.GetModule(moduleSize - 1, i){
+			sum1++
+		}
+		if out.GetModule(i, moduleSize - 1){
+			sum2++
+		}
+	}
+	if sum1 <= sum2 {
+		resultPoint = sum1 * 16 + sum2
+	}else{
+		resultPoint = sum2 * 16 + sum1
+	}
+	return resultPoint
+}
 
 // evalPenaltyRule1 :
 // (N1 = 3,N2 = 3,N3 = 40,N4 = 10)
@@ -244,4 +269,13 @@ func (out *BaseOutput) evalPenaltyRule4(moduleSize int) uint {
 	ceil := math.Abs(math.Ceil(darkRate/5) - 10)
 	//fmt.Printf("%p evalPenaltyRule4 floor:%f ceil:%f \n:",out,floor,ceil)
 	return uint(math.Min(floor, ceil) * 10)
+}
+
+// GetRecommendSize :Get recommend size for QRCode
+// return: the array of two recommend sizes
+func (out *BaseOutput) GetRecommendSize(moduleSize int) []int{
+	pixelSizePerModule := out.Size / moduleSize
+	recSize1 := moduleSize * pixelSizePerModule
+	recSize2 := moduleSize * (pixelSizePerModule + 1)
+	return []int{recSize1,recSize2}
 }

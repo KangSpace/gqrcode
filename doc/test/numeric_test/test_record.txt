@@ -70,6 +70,7 @@ data: 01234567890.....(1023)
     mode indicator + count indicator + data + terminator + (补充8的倍数个):3432
     total : 3688
     padCodewordsBitLen : 256
+
 test4:
 data: 01234567890.....(5269)
 大小: 5269
@@ -84,3 +85,17 @@ data: 01234567890.....(5269)
 
     finalCodeword: 2876
     finalCodewordDataBits: 2876 * 8 = 23008
+
+(Micro QRCode)test5:
+data: 0123456789012345(16)
+大小: 10
+    version: -3(M3), size:52, ec:L 7% mode:Numeric
+    version 1 numeric mode character count : 3  modeDataCapacity: 5
+    version 2 numeric mode character count : 4  modeDataCapacity: L: 10 M:8
+    version 3 numeric mode character count : 5  modeDataCapacity: L: 23 M:18
+    version 4 numeric mode character count : 6  modeDataCapacity: L: 35 M:30 Q:21
+
+    modeDataCapacity: 10
+    totalDataBits :
+    dataBits(before terminator):
+    00 10000 0000001100 0101011001 1010100110 1110000101 0011101010 0101

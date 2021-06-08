@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gqrcode/core/cons"
+	"github.com/gqrcode/core/logger"
 	"github.com/gqrcode/core/model"
 	"github.com/gqrcode/core/output"
 )
@@ -50,7 +51,7 @@ func NewQRCodeStruct(data string, format cons.Format, version *model.Version,mod
 	qr.Mode = mode
 	qr.ErrorCorrection = ec
 	qr.AlignmentPattern = model.NewAlignmentPattern(version)
-	qr.TimingPattern = model.NewTimingPattern()
+	qr.TimingPattern = model.NewTimingPattern(version)
 	qr.QuietZone = qz
 	return qr
 }
@@ -76,6 +77,22 @@ func (qr *QRCodeStruct) GetModuleSize() int{
 	return qr.Version.GetModuleSize() + qr.QuietZone.GetQuietZoneSize()
 }
 
+// GetMaskCount :
+func (qr *QRCodeStruct) GetMaskCount() int{
+	if qr.Version.Id> 0 {
+		return 8
+	}
+	return 4
+}
+
+// GetBitLen :
+func (qr *QRCodeStruct) GetBitLen() int{
+	if qr.Version.Id == model.VERSION_M1 || qr.Version.Id == model.VERSION_M3{
+		return 4
+	}
+	return 8
+}
+
 // SetMask :
 func (qr *QRCodeStruct) SetMask(mask int){
 	qr.Mask = mask
@@ -90,6 +107,16 @@ func (qr *QRCodeStruct) Encode(out output.Output,fileName string) (err error){
 	}
 }
 
+// EncodeToBase64 :
+func (qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string,err error){
+	if out_,err :=qr.innerEncode(out);err == nil {
+		return out_.SaveToBase64()
+	}else {
+		return "",err
+	}
+}
+
+
 func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output,err error){
 	defer func(){
 		if rec := recover(); rec != nil {
@@ -101,20 +128,11 @@ func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output,err e
 			default:
 				err = errors.New(fmt.Sprintf("%v", x))
 			}
+			logger.Error(err)
 		}
 	}()
 	return qr.buildQRCode(out),nil
 }
-
-// EncodeToBase64 :
-func (qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string,err error){
-	if out_,err :=qr.innerEncode(out);err == nil {
-		return out_.SaveToBase64()
-	}else {
-		return "",err
-	}
-}
-
 
 // BuildQRCode : Handle QRCode Data step by step , and write data to out.
 // Core handle entrance.
@@ -131,4 +149,14 @@ func (qr *QRCodeStruct) buildQRCode(out output.Output) output.Output{
 	finalMessage := mode.BuildFinalErrorCorrectionCodewords(qr,ds)
 	// draw image
 	return mode.BuildModuleInMatrix(qr,finalMessage,out)
+}
+
+func (qr *QRCodeStruct) IsMicroQRCode() bool{
+	return cons.MicroQrcode == qr.Format
+}
+func (qr *QRCodeStruct) IsQRCodeModel2() bool{
+	return cons.QrcodeModel1 == qr.Format
+}
+func (qr *QRCodeStruct) IsQRCodeModel1() bool{
+	return cons.QrcodeModel2 == qr.Format
 }

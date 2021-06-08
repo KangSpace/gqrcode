@@ -1,4 +1,4 @@
-package core
+package main
 
 import (
 	"bufio"
@@ -23,7 +23,7 @@ import (
 	"time"
 )
 var home = os.Getenv("HOME")
-var gqrcodePath = home+"/Desktop/gqrcode/"
+var gqrcodePath = home +"/Desktop/gqrcode/"
 var currentPath,_ = os.Getwd()
 
 
@@ -33,16 +33,16 @@ var currentPath,_ = os.Getwd()
 // --- PASS: TestAllNumericQRCode (990.46s)
 func TestAllNumericQRCode(t *testing.T){
 	fmt.Println("TestAllNumericQRCode:")
-	testFile := currentPath+"/../doc/test/numeric_test/nmb.txt"
-	resultPath := currentPath+"/../doc/test/numeric_test/imgs/"
-	reportFile := currentPath+"/../doc/test/numeric_test/test_report.csv"
+	testFile := currentPath +"/../doc/test/numeric_test/nmb.txt"
+	resultPath := currentPath +"/../doc/test/numeric_test/imgs/"
+	reportFile := currentPath +"/../doc/test/numeric_test/test_report.csv"
 	dataRowCount := 7089
 	AllQRCodeTest(testFile,resultPath,reportFile,dataRowCount,t)
 }
 
 func AllQRCodeTest(testFile,resultPath,reportFile string,dataRowCount int,t *testing.T){
 	os.Mkdir(resultPath,os.ModePerm)
-	if err:=initVerifyQRCodeByPythonEnv();err !=nil{
+	if err:= initVerifyQRCodeByPythonEnv();err !=nil{
 		fmt.Println("python environment init failed.")
 		t.Fatal(err)
 	}else{
@@ -86,7 +86,7 @@ func AllQRCodeTest(testFile,resultPath,reportFile string,dataRowCount int,t *tes
 				for _,data := range subDatas{
 					dataLen := len(data)
 					fileName := resultPath + strconv.Itoa(dataLen)+".png"
-					result :=singleQrCodeGenerateVerify(data,fileName)
+					result := singleQrCodeGenerateVerify(data,fileName)
 
 					lock.Lock()
 					// multi goroutine lock
@@ -138,7 +138,7 @@ func singleQrCodeGenerateVerify(data,fileName string) (result string){
 }
 
 func generateTestQRCode(data string,fileName string) error{
-	if qr,err :=NewQRCode(data);err == nil{
+	if qr,err := NewQRCode(data);err == nil{
 		err = qr.Encode(output.NewPNGOutput0(),fileName)
 		return err
 	}else{
@@ -155,7 +155,7 @@ var envArg = []string{"install", "qrcode", "pillow", "image" ,"zxing"}
 
 func initVerifyQRCodeByPythonEnv() (err error){
 	fmt.Println("init python environment!")
-	if result,err :=util.RunCmd(verifyQRCodeByPythonInitEnvCmd,envArg...);err == nil{
+	if result,err :=util.RunCmd(verifyQRCodeByPythonInitEnvCmd, envArg...);err == nil{
 		fmt.Println(result)
 		return nil
 	}else{
@@ -168,7 +168,7 @@ func initVerifyQRCodeByPythonEnv() (err error){
 // The decoder is python pyzbar in here.
 func VerifyQRCodeByPython(fileName string) (result string, err error){
 	fmt.Println("Verify:"+fileName)
-	return util.RunCmd(verifyQRCodeByPythonCmd,verifyArg0,fileName)
+	return util.RunCmd(verifyQRCodeByPythonCmd, verifyArg0,fileName)
 }
 
 
@@ -255,7 +255,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	fmt.Println("data length:"+ strconv.Itoa( len(data)))
 
 	//data := "8675309"
-	fileName := gqrcodePath+fileNamePrefix+"_auto_size_no_quiet.png"
+	fileName := gqrcodePath +fileNamePrefix+"_auto_size_no_quiet.png"
 	fmt.Println("test case1:"+fileName)
 	//out := output.NewPNGOutput(100)
 	out := output.NewPNGOutput0()
@@ -269,7 +269,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	}
 	qrcode.Encode(out,fileName)
 
-	fileName = gqrcodePath+fileNamePrefix+"_auto_size_auto_quiet.png"
+	fileName = gqrcodePath +fileNamePrefix+"_auto_size_auto_quiet.png"
 	fmt.Println("test case2:"+fileName)
 	//out = output.NewPNGOutput(100)
 	out = output.NewPNGOutput0()
@@ -283,7 +283,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	}
 	qrcode.Encode(out,fileName)
 
-	fileName = gqrcodePath+fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_no_quiet.png"
+	fileName = gqrcodePath +fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_no_quiet.png"
 	fmt.Println("test case3:"+fileName)
 	out = output.NewPNGOutput(imageSize)
 	//out = output.NewPNGOutput0()
@@ -296,7 +296,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	}
 	qrcode.Encode(out,fileName)
 
-	fileName = gqrcodePath+fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_auto_quiet.png"
+	fileName = gqrcodePath +fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_auto_quiet.png"
 	fmt.Println("test case4:"+fileName)
 	out = output.NewPNGOutput(imageSize)
 	//out = output.NewPNGOutput0()
@@ -324,7 +324,7 @@ func TestAlphanumericQRCode(t *testing.T) {
 	fileNamePrefix := "alphanumeric"
 	fileName := gqrcodePath + fileNamePrefix+".jpg"
 	out := output.NewJPGOutput0()
-	qrcode, err := NewQRCode(data)
+	qrcode, err := NewQRCodeAutoQuiet(data)
 	if err != nil{
 		t.Fatal(err)
 	}
@@ -340,13 +340,12 @@ func TestAlphanumericQRCode(t *testing.T) {
 	}
 }
 
-// TODO, Waiting for test
 // TestAllAlphanumericQRCode :Test all alphanumeric string for QRCode by 1 to 4296 length of string.
 func TestAllAlphanumericQRCode(t *testing.T) {
 	fmt.Println("TestAllAlphanumericQRCode:")
-	testFile := currentPath+"/../doc/test/numeric_test/nmb.txt"
-	resultPath := currentPath+"/../doc/test/numeric_test/imgs/"
-	reportFile := currentPath+"/../doc/test/numeric_test/test_report.csv"
+	testFile := currentPath +"/../doc/test/numeric_test/nmb.txt"
+	resultPath := currentPath +"/../doc/test/numeric_test/imgs/"
+	reportFile := currentPath +"/../doc/test/numeric_test/test_report.csv"
 	dataRowCount := 4296
 	AllQRCodeTest(testFile,resultPath,reportFile,dataRowCount,t)
 }
@@ -433,19 +432,24 @@ func TestByteChineseQRCode(t *testing.T) {
 // TestByteQRCodeWithLogo :Test byte qrcode with logo
 func TestByteQRCodeWithLogo(t *testing.T) {
 	data := "https://kangspace.org"
-	logoImageFilePath := currentPath+"/../doc/images/qr/kangspace_logo.png"
+	logoImageFilePath := currentPath +"/../doc/images/qr/kangspace_logo.png"
 	//logoImageFilePath := currentPath+"/../doc/images/qr/bd.png"
 	fileNamePrefix := "qrcode_with_logo"
-	out := output.NewJPGOutput(264)
+	// 264,429
+	out := output.NewJPGOutput(1000)
 	out.AddOption(output.LogoOption(logoImageFilePath))
 	qrcode, err := NewQRCodeAutoQuiet(data)
 	if err != nil{
-		t.Fatal(err)
+		panic(err)
 	}
 	fileName := gqrcodePath + fileNamePrefix+".png"
-	qrcode.Encode(out,fileName)
+	err = qrcode.Encode(out,fileName)
+	if err != nil {
+		t.Fatal(err)
+	}
 	fmt.Printf("moduleSize:%v, version:%v, size:%d, ec:%v mode:%s \n",qrcode.GetModuleSize(),qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
 	fmt.Println("fileName,"+fileName)
+	fmt.Printf("RecommendSize:%d \n" ,out.GetRecommendSize(qrcode.GetModuleSize()))
 }
 
 

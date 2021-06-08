@@ -1,194 +1,175 @@
 # QR Code(Quick Response Code) Implement by Go
+The QRCode Generator, Micro QRCode Generator, QRCode Decoder, Micro QRCode Decoder application.
 > According to ISO/IEC 18004-2015 Standard  
-> (2021-05-17 ~ )
+> 
 
-## QRCode Types 
-* QRCode   
-  > With fall range of capabilities and maximum data capacity.  
-  *   QRCode Model1  
-      ![Model_1_QR_Version_2_Layout](doc/images/200px-Model_1_QR_Version_2_Layout.svg.png)
-  *   QRCode Model2  
-      ![QR_Code_Structure_Example_3](doc/images/800px-QR_Code_Structure_Example_3.svg.png)
-  ![](doc/images/qrcode_model1_model2_struct.png)
+## Installation
+```
+go get -u github.com/KangSpace/gqrcode
+```
 
-  QRCode Struct:  
+## Usage
+#### QR Code
+
+QRCode supports 4 character modes, and 40 versions with 4 Error correction levels.
+
+Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction levels.
+
+4 Modes: 
+* numeric  
+  characters(10): 0 - 9  
   
-  ![qrcode_symbol_struct](doc/images/qrcode_symbol_struct.png)
-  ![QR_Format_Information](doc/images/560px-QR_Format_Information.svg.png)
+  maximum characters in Version 40-L: 7089 characters.
   
-  * Function patterns  
-    **Finder pattern**  
-    > (Page 24,6.3.3 Finder pattern)  
-      There are 3 identical Finder pattern locate at the upper left,upper right and low left corner of the symbol.  
-      Each finder pattern may be viewed as 3 superimposed concentric squares:  
-        dark 7 x 7 modules  
-        light 5 x 5 modules  
-        dark 3 x 3 modules.  
-      The ratio of module widths in each finder pattern is 1:1:3:1:1.  
-      ![Finder pattern struct](doc/images/finder_pattern_struct.png)
-    
-    **Separator**  
-    > A one-module wide separator, constructed of all light modules,is placed between each finder pattern and the Encoding Region.  
-    
-    **Timing pattern**  
-    > The horizontal and vertical timing patterns respectively consist of a one module wide row or column of alternating dark and light modules,  
-      commencing and ending with a dark module.  
-      They enable the symbol density and version to be determined and provide datum positions for determining module coordinates.
-    
-    > In QR Code symbols,`the horizontal` timing pattern runs across _`row 6`_ of the symbol between _`the separators for the upper finder patterns`_;  
-      `the vertical` timing pattern similarly runs down _`column 6`_ of the symbol between `the separators for the left-hand finder patterns`.  
-      See Figure 3;
+* alphanumeric  
+  characters(45): 0 - 9, A - Z, SP, $, %, *, +, -, ., /, :  
 
-    > In Micro QR Code symbols, `the horizontal` timing pattern runs across `row 0 `of the symbol on the `right side of the separator to the right-hand edge `of the symbol;  
-      `the vertical` timing pattern similarly runs down` column 0 `of the symbol below the `separator to the bottom edge` of the symbol.  
-      See Figure 4;    
-
-    **Alignment pattern**
-    > Alignment patterns are present `only in QR Code symbol of version 2 or larger`.  
-      Each alignment pattern my be viewd as three superimposed concentric squares and is constructed of:  
-      dark 5 x 5 modules  
-      light 3 x 3 modules
-      single central dark module  
-      The number of alignment patterns depend on the symbol version.
-    
-  * Encoding region  
-    
-    **Format information**  
-    
-    **Version information**
-    **Data and error correction codewords**
-    
-  * Quiet Zone(minimum:4x)
-
-
-* Micro QRCode  
-  > With reduce overhead,some restrictions on capabilities and reduce data capacity(compared with QR Code symbol)
-    
-  ![Micro_QR_Version_3M_Layout](doc/images/versions_of_microqrcode_symbol.png)
+  maximum characters in Version 40-L: 4296 characters.
   
-  Micro QRCode Struct:  
-  ![micro_qrcode_symbol_struct](doc/images/micro_qrcode_symbol_struct.png)  
+  > Alphanumeric mode is not available in Version M1 Micro QR Code Symbol
+
+* byte  
+  8-bit characters.  
+
+  maximum characters in Version 40-L: 2953 characters.
+
+  > Byte mode is not available in Version M1 or M2 Micro QR Code Symbol.
+   
+* kanji  
+  Kanji characters in accordance with the Shift JIS system based on JIS X 0209.
+  Only use for double-byte characters, Range are: \x8140-\x9FFC and \xE040-\xEBBF.
+
+  maximum characters in Version 40-L: 2953 characters.
+
+  > Kanji mode is not available in Version M1 Or M2 Micro QR Code Symbol.
+
+
+4 Error correction level:
+Four levels of Reed-Solomon error correction(referred to as L, M, Q and H in increasing order of capacity)
+allowing recover of:
+
+- L 7%
+- M 15%
+- Q 25%
+- H 30%
+    > Micro QR Code is not support H level.
+
+##### Create QR Code
+```
+    // create a numeric qrcode
+    data := "0123456"
+    qrcode, err := NewQRCode(data)   
+    outFileName := "/opt/temp/numeric.png"
+    if err == nil{
+        out := output.NewPNGOutput0()
+        qrcode.Encode(out,outFileName)
+    }
+    
+    // create a numeric micro qrcode
+    micQrcode, err := NewMicroQRCode(data)   
+    outFileName2 := "/opt/temp/numeric_micro.png"
+    if err == nil{
+        out2 := output.NewPNGOutput0()
+        micQrcode.Encode(out2,outFileName2)
+    }
+```
+
+
+* [NewQRCode(content string) (*mode.QRCodeStruct,error)](qrcode.go)  
   
-  **Finder pattern**  
-    > A single finder pattern, as defined [QRCode]  
+  Create a new QRCode(Model2) by input data.   
+  There will be auto-detected the Version, Error Correction Level, and without Quiet Zone.
+
+  e.g.:   
+  ![alphanumeric qrcode](doc/images/qr/alphanumeric.jpg)
+
+
+* [NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error)](qrcode.go)   
   
-  **Separator**  
-  **Timing pattern**  
-  **Format information**  
-  **Encoding region**  
-  **Quiet zone**(minimum:2x)  
-
-## Encode procedure overview steps:  
-(Page 26. Encode procedure overview)
-1. Data analysis  
-   Determine the smallest version or specified version for ues.  
-   Mode select strategy by Page 107(PDF) optimisation of bit stream length.
-   ![codeword_capacity_of_all_versions_of_qr_code_1](doc/images/codeword_capacity_of_all_versions_of_qr_code_1.png)   
-   ![codeword_capacity_of_all_versions_of_qr_code_2](doc/images/codeword_capacity_of_all_versions_of_qr_code_2.png)
-   ![codeword_capacity_of_all_versions_of_qr_code_3](doc/images/codeword_capacity_of_all_versions_of_qr_code_3.png)
-   
-2. Data encoding  
-   Convert the data characters `into a bit stream in accordance with the rules for the mode in force`, as defined in 7.4.2 to 7.4.6,
-   inserting mode indicators as necessary to change modes at the beginning of each new mode segment,
-   and a Terminator at the end of the data sequence.  
-   **Split the resulting bit stream into `8-bit codewords`**(data codeword).  
-   Add Pad Characters as necessary to fill the number of data codewords required for the version.
-   
-   `Mode Indicator Bits + Data Bits + Terminal Bits + Padding Bits(to full version bits count)`  
-   The ECI header(if present) shall comprise:  
-    --- ECI Mode Indicator(4 bits)  
-    --- ECI Designator(8,16 or 24 bits)    
-   The ECI header shall begin with the first(most significant)bit of the ECI mode indicator and end with the final(least significant) bit of the ECI Designator.  
-   The remainder of the bit stream is then made up of segments each comprising:  
-   --- Mode indicator  
-   --- Character count indicator  
-   --- Data bit stream  
-   Each mode segment shall begin with the first(most significant) bit of the mode indicator and end with the final(least significant) bit of the data bit stream.  
-   There shall be no explicit separator between segments as their length is defined unambiguously by the rules for the mode in force and the number of input data characters.  
-   ![mode_indicators_for_qrcode](doc/images/mode_indicators_for_qrcode.png)
-   ![number_of_bits_in_character_count_indicator_for_qrcode](doc/images/number_of_bits_in_character_count_indicator_for_qrcode.png)  
-   **The end of the data in the complete symbol is indicated by a Terminator consisting of `between 3 and 9 zero bits(see Table2)`,
-   which is omitted or abbreviated if the remaining symbol capacity after the data bit stream is less than the required bit length of Terminator.  
-   The Terminator is not a mode indicator as such.**
-
-3. Error correction encoding  
-   Divide the codeword(2. Data encoding resulting codewords) sequence into the required number of blocks(as defined in Table9) to enable the error correction algorithms to be processed.  
-   `Generate the error correction codewords for each block,appending the error correction codewords to the end of the data codeword sequence.`   
-   
-4. Structure final message  
-   Interleave the data and error correction codewords from each block as described in 7.6(step3) and add remainder bits as necessary.
-   
-5. Module placement in matrix  
-   Place the codeword modules in the matrix together with the finder pattern,separators,timing pattern,and (if required) alignment patterns.    
-   Page 54,7.7 Codeword placement in matrix  
-   7.7.1 Symbol Character representation  
-   > There are two types of symbol character,regular an irregular,in the QR Code symbol.  
-     Their use depends on their position in the symbol,relative to other symbol characters and function patterns.  
-   
-   > Most codewords shall be represented in `regular 2 x 4 module block in the symbol`.  
-     There are two ways of positioning these blocks,  
-     in a vertical arrangement (2 modules wide 4 modules high) and,if necessary when placement changes direction,   
-     in a horizontal arrangement(4 modules wide and 2 modules high).
-   
-    > Irregular symbol characters are used when changing direction or in the vicinity of alignment or other function Patterns.
-      Examples are shown in Figures 16,17 and 18.
-
-6. Data masking  
-   Apply the data masking patterns in turn to the encoding region of the symbol.  
-   Evaluate the results and select the pattern which optimizes the dark/light module balance and minimizes the occurrence of undesirable patterns.
-   
-7. Format and Version Information  
-   Generate the format information and (where applicable) the version information and complete the symbol.
+  Create a new QRCode(Model2) by input data with auto-size Quiet Zone, default is 4x modules per side.
+  
+  e.g.:  
+  ![alphanumeric qrcode with auto quiet zone](doc/images/qr/alphanumeric_auto_quietzone.jpg)
 
 
-## Implement Functions: 
+* [NewMicroQRCode(content string) (*mode.QRCodeStruct,error)](qrcode.go)
 
-> To implement specified size (width/height) QR Code.
+  Create a new Micro QRCode by input data.
+  
+  e.g.:  
+  ![numeric qrcode](doc/images/qr/numeric_micro_qrcode5.png)
+  
 
-* Encoder(Page 12-)  
-  to JPG, PNG, SVG  
-  (with outer mark image in center(expect SVG))
-* Decoder  
-  From JPG, PNG, SVG  
-  (Parser multi symbols in one image)
+* [NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error)](qrcode.go)
 
-## Implementation order
+  Create a new Micro QRCode by input data with auto-size Quiet Zone, default is 2x modules per side.
+  
+  e.g.:  
+  ![byte_micro qrcode with auto quiet zone](doc/images/qr/byte_micro_qrcode15.png)
 
-1. Generate: QRCode Model2  
-   Generate and Simple Test QRCode Model2.
-2. Generate: QRCode Model1  
-   Generate and Simple Test QRCode Model1.
-3. Generate: Micro QRCode  
-   Generate and Simple Test Micro QRCode.
-4. Completion Test  
-   Test for Correctness and Performance
+* [NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mode.Mode,quietZone *model.QuietZone) (qr *mode.QRCodeStruct,err error)](qrcode.go)
 
-## Test:
+  Create a new QRCode by input data with full parameters.  
 
-## Test for Correctness and Performance
-> Compare with ZXING in Correctness and Performance(CPU,Memory and Cost time)
+    **Params**:
 
-
-## Reference
-> 1. ISO IEC 18004-2015.pdf
-> 2. QR Code Specification-ISO_IEC_18004-2006.pdf
-> 3. https://www.thonky.com/qr-code-tutorial/error-correction-coding
+    |  Parameter | Type | Values  | Comments |
+    |  ----  | ---- | ----  | ----|
+    | content  | string | numeric,alphanumeric,and other strings |-|
+    | format  | [cons.Format](core/cons/constant.go) | cons.QRCODE,cons.QrcodeModel2,cons.MicroQrcode | cons.QRCODE same with cons.QrcodeModel2|
+    | ec   | [*mode.ErrorCorrection](core/mode/errorcorrection.go) | NewErrorCorrection(level) | level in (cons.L,cons.M,cons.Q,cons.H)|
+    | m   | [mode.Mode](core/mode/mode.go) | NewNumericMode(),NewAlphanumericMode(),NewKanjiModeMode(),	NewByteModeMode() | - |
+    | quietZone   | [*model.QuietZone](core/model/quietzone.go) | model.AutoQuietZone,model.NoneQuietZone,NewQuietZone(size int)| - |
 
 
-## Dependency Package
-1. imaging
-> go get -u github.com/disintegration/imaging
+###### Encode QR Code
 
-2. image
-> mkdir $GOPATH/golang.org/x/    
-> cd $GOPATH/golang.org/x/  
-> git clone https://github.com/golang/image.git
+```
+   out := output.NewPNGOutput0()
+   qrcode.Encode(out,outFileName)
+```
+* [(qr *QRCodeStruct) Encode(out output.Output,fileName string) (err error)](core/mode/qrcodestruct.go)  
 
-3. text
-> cd $GOPATH/golang.org/x/  
-> git clone https://github.com/golang/text.git  
+  Encode the QRCode/Micro QRCode to the specified file and output.
 
-## Todo list
+
+* [(qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string,err error)](core/mode/qrcodestruct.go)  
+
+  Encode the QRCode/Micro QRCode to Base64 URL String(like data:image/png,base64,xxxx) and output.
+    
+**Encode Params**:
+
+|  Parameter | Type | Values  | Comments |
+|  ----  | ---- | ----  | ----|
+| out  | [output.Output](core/output/output.go) | NewPNGOutput(size int), NewPNGOutput0(), NewJPGOutput(size int), NewJPGOutput0(), NewGIFOutput(size int), NewGIFOutput0() |Newxxx0() output with auto-size for image.|
+| fileName  | string | output file path | - |
+
+###### Output QRCode
+
+   [output.ImageOutput](core/output/image_output.go) implements [output.Output](core/output/output.go) interface to output PNG,JPG,GIF image.
+  ```
+      out := output.NewPNGOutput(100)
+      out = output.NewPNGOutput0()
+    
+      logoImageFilePath := "logo.png"
+      // add logo image into QRCode
+      out.AddOption(output.LogoOption(logoImageFilePath))
+  ```
+
+**Output Params**:
+
+  |  Parameter | Type | Values  | Comments |
+      |  ----  | ---- | ----  | ----|
+  | size  | int | the image size for output|-|
+
+
+###### Test QR Code
+
+All QRCode test in [qrcode_test.go](qrcode_test.go) and [micro_qrcode_test.go](micro_qrcode_test.go) files.
+
+
+
+#### TODO list
 
 <table>
 	<thead>
@@ -228,31 +209,46 @@
         <tr >
             <td >QRCode Model1</td>
             <td>-</td>
-            <td>-</td>
+            <td>NOT-SUPPORT</td>
         </tr>
         <tr >
             <td >Micro QRCode</td>
-            <td>-</td>
-            <td>-</td>
+            <td>Micro QRCode</td>
+            <td>2021-06-07</td>
         </tr>
         <tr >
             <td >
                 Personalized QRCode <br>
-                <span style="font-size: smaller;">add logo image at center of QRCode</span>
+                <span style="font-size: smaller;">(add logo image at center of QRCode)</span>
             </td>
             <td>-</td>
-            <td>-</td>
+            <td>2021-06-02</td>
         </tr>
         <tr >
-            <td rowspan="2">
+            <td rowspan="3">
                 Output
             </td>
-            <td>SVG</td>
-            <td>-</td>
+            <td>Image File</td>
+            <td>2021-05-30</td>
         </tr>
         <tr >
             <td>Base64 String</td>
             <td>2021-06-01</td>
+        </tr>
+        <tr >
+            <td>SVG</td>
+            <td>-</td>
+        </tr>
+        <tr >
+            <td rowspan="2">
+                Decoder
+            </td>
+            <td>QRCode</td>
+            <td>-</td>
+        </tr>
+        <tr >
+            <td>Micro QRCode</td>
+            <td>-</td>
         </tr>
 	</tbody>
 </table>

@@ -14,7 +14,7 @@ type VersionId = int
 type VersionName = string
 
 const (
-	// VERSION_ALL : All QRCode Model2 Versions value is (VersionId >> 40)
+	// VERSION_ALL : All QRCode Model2 Versions value is 0
 	VERSION_ALL VersionId = 0
 	VERSION1 VersionId = 1
 	VERSION2 VersionId = 2
@@ -258,11 +258,25 @@ var VersionFinalCodewordCapacityMap = map[VersionId]*VersionFinalCodewordCapacit
 func GetVersionByInputDataLength(format cons.Format,dataLen int,mode cons.ModeType,level cons.ErrorCorrectionLevel) (*Version, cons.ErrorCorrectionLevel){
 	maxVId := VERSION40
 	minVId := VERSION1
-	if format == cons.MicroQrcode {
-		minVId = VERSION_M4
-		maxVId = VERSION1
+	condition := func(vId VersionId) bool{
+		return vId <= maxVId
 	}
-	for vId := minVId; vId<= maxVId ; vId++{
+	vIdUpdate := func(vId VersionId) int{
+		vId ++
+		return vId
+	}
+	if format == cons.MicroQrcode {
+		minVId = VERSION_M1
+		maxVId = VERSION_M4
+		condition = func(vId VersionId) bool{
+			return vId >= maxVId
+		}
+		vIdUpdate = func(vId VersionId) int{
+			vId --
+			return vId
+		}
+	}
+	for vId := minVId; condition(vId) ; vId = vIdUpdate(vId){
 		if ecMap,ok:= VersionSymbolCharsAndInputDataCapacityMap[vId];ok{
 			for ecLevel:= cons.H ;ecLevel > 0; ecLevel--  {
 				if capacity,ok := ecMap[ecLevel]; ok{
@@ -327,4 +341,11 @@ func (v *Version) GetModuleSize() int{
 
 func (v *Version) GetDefaultPixelSize() int{
 	return v.GetModuleSize() * cons.DefaultPixelSizePerModule
+}
+
+func (v *Version) IsMicroQRCode() bool{
+	return v.Id < 0
+}
+func (v *Version) IsMicroQRM1M3Code() bool{
+	return v.Id == VERSION_M1 ||  v.Id == VERSION_M3
 }

@@ -40,7 +40,7 @@ func NewNumericMode() *NumericMode{
 //	R	0 if(D MOD 3) = 0
 //	R	4 if(D MOD 3) = 1
 //	R	7 if(D MOD 3) = 2
-func (nm *NumericMode) DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream){
+func (nm *NumericMode)  DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream){
 	//dataStream = util.NewDataStream(16)
 	//// Mode indicator bits
 	//nm.buildModeIndicator(qr,dataStream)

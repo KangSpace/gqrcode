@@ -1,9 +1,10 @@
-package core
+package main
 
 import (
 	"errors"
 	"fmt"
 	"github.com/gqrcode/core/cons"
+	"github.com/gqrcode/core/logger"
 	"github.com/gqrcode/core/mode"
 	"github.com/gqrcode/core/model"
 )
@@ -32,6 +33,7 @@ func NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mod
 			default:
 				err = errors.New(fmt.Sprintf("%v", x))
 			}
+			logger.Error(err)
 			qr = nil
 		}
 	}()
@@ -54,15 +56,25 @@ func NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mod
 	return mode.NewQRCodeStruct(content, format, version,m,ec,quietZone),nil
 }
 
+// NewQRCode :Create a QRCode(Model 2).
 func NewQRCode(content string) (*mode.QRCodeStruct,error) {
 	return NewQRCode0(content,"",nil,nil,nil)
 }
 
+// NewQRCodeAutoQuiet :Create a QRCode(Model 2) with model.AutoQuietZone.
 func NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error) {
 	return NewQRCode0(content,"",nil,nil,model.AutoQuietZone)
 }
 
+// NewMicroQRCode :Create a Micro QRCode.
+func NewMicroQRCode(content string) (*mode.QRCodeStruct,error) {
+	return NewQRCode0(content,cons.MicroQrcode,nil,nil,nil)
+}
 
+// NewMicroQRCodeAutoQuiet :Create a Micro QRCode with model.AutoQuietZone.
+func NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error) {
+	return NewQRCode0(content,cons.MicroQrcode,nil,nil,model.AutoQuietZone)
+}
 // DataAnalyzer : struct for Data Analysis handle
 type DataAnalyzer struct {
 	Data string `json:"data"`

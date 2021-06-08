@@ -86,6 +86,18 @@ func Bits8ToByte(bitArray []Bit) byte{
 	return bitsByte
 }
 
+// BitsToByte : convert bits to 1 byte
+func BitsToByte(bitArray []Bit,bitLen int) byte{
+	if len(bitArray) != bitLen {
+		panic(errors.New("input bit length is not 8"))
+	}
+	var bitsByte byte = 0
+	for i:=0; i <bitLen ; i++ {
+		bitsByte += bitArray[i]<<(bitLen - 1 -i)
+	}
+	return bitsByte
+}
+
 func ByteArrayToIntArray(data []byte) (dataInts []int){
 	dataInts = make([]int,len(data))
 	for i := 0; i < len(data); i++ {
@@ -125,6 +137,9 @@ func ByteArrayTo8BitArrayWithCount(data []byte,bitsCount int) (dataBits []Bit){
 	dataBits = make([]Bit,0,bitsCount)
 	for i := 0; i < dataLen; i++ {
 		arr:= IntTo8BitArray(int(data[i]))
+		if len(dataBits)+len(arr) > bitsCount {
+			arr = arr[bitsCount - len(dataBits):]
+		}
 		dataBits = append(dataBits,arr...)
 	}
 	return dataBits

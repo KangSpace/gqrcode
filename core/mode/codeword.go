@@ -28,7 +28,7 @@ type CodewordBit = int
 
 const (
 	QrcodeCodewordBit          CodewordBit = 8
-	MicroQrcodeM1m3CodewordBit CodewordBit = 4
+	MicroQrcodeM1M3CodewordBit CodewordBit = 4
 )
 
 var PadCodewords = map[cons.Format][][]byte{
@@ -44,7 +44,8 @@ func (m *AbstractMode) BuildCodewords(qr *QRCodeStruct,dataStream *util.DataStre
 
 	// Micro QR Code version M1 and M3 symbols,which is 4 bits in length
 	if model.VERSION_M1 == versionId || model.VERSION_M3 == versionId {
-		m.buildDataCodewords(qr,dataStream, cons.MicroQrcode, MicroQrcodeM1m3CodewordBit)
+		//	all codewords are `4 bits in length`
+		m.buildDataCodewords(qr,dataStream, cons.MicroQrcode, MicroQrcodeM1M3CodewordBit)
 	}else{
 		//	all codewords are `8 bits in length`
 		m.buildDataCodewords(qr,dataStream, cons.QRCODE, QrcodeCodewordBit)
