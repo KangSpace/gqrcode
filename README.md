@@ -8,6 +8,21 @@ The QRCode Generator, Micro QRCode Generator, QRCode Decoder, Micro QRCode Decod
 go get -u github.com/KangSpace/gqrcode
 ```
 
+Dependencies Package:
+
+1. imaging
+> go get -u github.com/disintegration/imaging
+
+2. image
+> mkdir $GOPATH/golang.org/x/    
+> cd $GOPATH/golang.org/x/  
+> git clone https://github.com/golang/image.git
+
+3. text
+> cd $GOPATH/golang.org/x/  
+> git clone https://github.com/golang/text.git
+
+
 ## Usage
 #### QR Code
 
@@ -156,14 +171,15 @@ allowing recover of:
       out.AddOption(output.LogoOption(logoImageFilePath))
   ```
 
-**Output Params**:
+**Output Params**:  
 
   |  Parameter | Type | Values  | Comments |
       |  ----  | ---- | ----  | ----|
   | size  | int | the image size for output|-|
 
 
-###### Test QR Code
+
+#### Test QR Code
 
 All QRCode test in [qrcode_test.go](qrcode_test.go) and [micro_qrcode_test.go](micro_qrcode_test.go) files.
 

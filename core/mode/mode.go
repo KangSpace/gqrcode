@@ -325,25 +325,46 @@ func newQRCodeMaskOutputGroup(maskCount int, from output.Output) []output.Output
 	return outputs
 }
 
-// selectLowestPenaltyMaskOut :
-// Evaluate mask penalty for mask (0-7 for QRCode or 0-3 for Micro QRCode) and select the pattern with the lowest penalty points score.
-func selectLowestPenaltyMaskOut(qr *QRCodeStruct,outs []output.Output,moduleSize int) (out output.Output,mask int){
-	lowestPenalty := ^uint(0)
-	var lowestPenaltyOut output.Output = nil
+// selectRightPenaltyMaskOut :
+// 1. QRCode: Evaluate mask penalty for mask (0-7 for QRCode) and select the pattern with the lowest penalty points score.
+// 2. Micro QRCode: Evaluate mask penalty for mask (0-3 for Micro QRCode) and select the pattern with the highest score.
+func selectRightPenaltyMaskOut(qr *QRCodeStruct,outs []output.Output,moduleSize int) (out output.Output,mask int){
+	if qr.IsMicroQRCode(){
+		return selectHighestScoreMaskOut(outs,moduleSize)
+	}
+	return selectLowestPenaltyMaskOut(outs,moduleSize)
+}
+
+// selectLowestPenaltyMaskOut :For QRCode
+func selectLowestPenaltyMaskOut(outs []output.Output, moduleSize int) (out output.Output, mask int) {
+	penalty := ^uint(0)
+	var penaltyOut output.Output = nil
 	for i,out_ := range outs{
-		var penalty uint
-		if qr.IsMicroQRCode(){
-			penalty = out_.GetBaseOutput().EvalMicroQRCodePenalty(moduleSize)
-		}else{
-			penalty = out_.GetBaseOutput().EvalPenalty(moduleSize)
-		}
-		if penalty < lowestPenalty {
-			lowestPenalty = penalty
-			lowestPenaltyOut = out_
+		var tempPenalty uint
+		tempPenalty = out_.GetBaseOutput().EvalPenalty(moduleSize)
+		if tempPenalty < penalty {
+			penalty = tempPenalty
+			penaltyOut = out_
 			mask = i
 		}
 	}
-	return lowestPenaltyOut,mask
+	return penaltyOut,mask
+}
+
+// selectHighestScoreMaskOut :For Micro QRCode
+func selectHighestScoreMaskOut(outs []output.Output, moduleSize int) (out output.Output, mask int) {
+	penalty := uint(0)
+	var penaltyOut output.Output = nil
+	for i,out_ := range outs{
+		var tempPenalty uint
+		tempPenalty = out_.GetBaseOutput().EvalMicroQRCodePenalty(moduleSize)
+		if tempPenalty > penalty {
+			penalty = tempPenalty
+			penaltyOut = out_
+			mask = i
+		}
+	}
+	return penaltyOut,mask
 }
 
 // BuildModuleInMatrix : Page 54,7.7 Codeword placement in matrix
@@ -397,8 +418,8 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util
 	// draw data
 	drawData(version,moduleSize, codewordsBits, out, outputGroupOutMask)
 
-	// evaluate mask penalty for mask 0-7 and select the pattern with the lowest penalty points score.
-	lowestPenaltyOut,mask := selectLowestPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
+	// evaluate mask penalty for mask 0-7 or 0-3
+	lowestPenaltyOut,mask := selectRightPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
 	qr.SetMask(mask)
 	if out != lowestPenaltyOut{
 		out = lowestPenaltyOut
@@ -453,7 +474,7 @@ func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct,codewords
 	// draw data
 	drawData(version,moduleSize, codewordsBits, out, outputGroupOutMask)
 
-	lowestPenaltyOut,mask := selectLowestPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
+	lowestPenaltyOut,mask := selectRightPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
 	qr.SetMask(mask)
 	if out != lowestPenaltyOut{
 		out = lowestPenaltyOut
