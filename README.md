@@ -174,8 +174,8 @@ allowing recover of:
 **Output Params**:  
 
   |  Parameter | Type | Values  | Comments |
-      |  ----  | ---- | ----  | ----|
-  | size  | int | the image size for output|-|
+  |  ----  | ---- | ----  | ---- |
+  | size  | int | the image size for output| - |
 
 
 
