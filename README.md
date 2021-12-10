@@ -59,9 +59,8 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
   > Kanji mode is not available in Version M1 Or M2 Micro QR Code Symbol.
 
 
-4 Error correction level:
-Four levels of Reed-Solomon error correction(referred to as L, M, Q and H in increasing order of capacity)
-allowing recover of:
+4 Error correction level:  
+  Four levels of Reed-Solomon error correction(referred to as L, M, Q and H in increasing order of capacity) allowing recover of:
 
 - L 7%
 - M 15%
@@ -95,8 +94,8 @@ allowing recover of:
   Create a new QRCode(Model2) by input data.   
   There will be auto-detected the Version, Error Correction Level, and without Quiet Zone.
 
-  e.g.:   
-  ![alphanumeric qrcode](doc/images/qr/alphanumeric.jpg)
+  e.g.:  
+![alphanumeric qrcode](doc/images/qr/alphanumeric.jpg)
 
 
 * [NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error)](qrcode.go)   
@@ -104,7 +103,7 @@ allowing recover of:
   Create a new QRCode(Model2) by input data with auto-size Quiet Zone, default is 4x modules per side.
   
   e.g.:  
-  ![alphanumeric qrcode with auto quiet zone](doc/images/qr/alphanumeric_auto_quietzone.jpg)
+![alphanumeric qrcode with auto quiet zone](doc/images/qr/alphanumeric_auto_quietzone.jpg)
 
 
 * [NewMicroQRCode(content string) (*mode.QRCodeStruct,error)](qrcode.go)
@@ -112,15 +111,16 @@ allowing recover of:
   Create a new Micro QRCode by input data.
   
   e.g.:  
-  ![numeric qrcode](doc/images/qr/numeric_micro_qrcode5.png)
-  
+![numeric qrcode](doc/images/qr/numeric_micro_qrcode5.png)
+
 
 * [NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error)](qrcode.go)
 
   Create a new Micro QRCode by input data with auto-size Quiet Zone, default is 2x modules per side.
   
-  e.g.:  
-  ![byte_micro qrcode with auto quiet zone](doc/images/qr/byte_micro_qrcode15.png)
+  e.g.:    
+![byte_micro qrcode with auto quiet zone](doc/images/qr/byte_micro_qrcode15.png)
+
 
 * [NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mode.Mode,quietZone *model.QuietZone) (qr *mode.QRCodeStruct,err error)](qrcode.go)
 
