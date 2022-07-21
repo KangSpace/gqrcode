@@ -1,6 +1,6 @@
 package model
 
-import "github.com/gqrcode/util"
+import "github.com/KangSpace/gqrcode/util"
 
 // Define Finder Pattern here
 
@@ -20,8 +20,7 @@ import "github.com/gqrcode/util"
 type FinderPatternPosition struct {
 	// value in (TOP_LEFT, TOP_RIGHT,BOTTOM_LEFT)
 	Position int
-	Axes *PositionAxes
-
+	Axes     *PositionAxes
 }
 type PositionAxes struct {
 	X int
@@ -30,16 +29,16 @@ type PositionAxes struct {
 
 type PositionAxesRange struct {
 	From *PositionAxes
-	To *PositionAxes
+	To   *PositionAxes
 }
 
 type Position = int
 
 // FinderPattern Position constants
 const (
-	TOP_LEFT  Position= iota // 0
-	TOP_RIGHT	// 1
-	BOTTOM_LEFT	// 2
+	TOP_LEFT    Position = iota // 0
+	TOP_RIGHT                   // 1
+	BOTTOM_LEFT                 // 2
 )
 const (
 	// QRCODE_BASE_MODULE_SIZE : Total forty sizes of QR Code symbol,
@@ -61,19 +60,19 @@ type FinderPattern struct {
 	Positions []FinderPatternPosition
 }
 
-func NewFinderPattern(version VersionId) *FinderPattern{
+func NewFinderPattern(version VersionId) *FinderPattern {
 	finderPattern := new(FinderPattern)
 	// QR Code
-	if version >0 {
+	if version > 0 {
 		finderPattern.Positions = []FinderPatternPosition{
-			{TOP_LEFT,GetPositionAxes(TOP_LEFT,version)},
-			{TOP_RIGHT,GetPositionAxes(TOP_RIGHT,version)},
-			{BOTTOM_LEFT,GetPositionAxes(BOTTOM_LEFT,version)},
+			{TOP_LEFT, GetPositionAxes(TOP_LEFT, version)},
+			{TOP_RIGHT, GetPositionAxes(TOP_RIGHT, version)},
+			{BOTTOM_LEFT, GetPositionAxes(BOTTOM_LEFT, version)},
 		}
-	}else{
+	} else {
 		//Micro QR Code
 		finderPattern.Positions = []FinderPatternPosition{
-			{TOP_LEFT,GetPositionAxes(TOP_LEFT,version)},
+			{TOP_LEFT, GetPositionAxes(TOP_LEFT, version)},
 		}
 	}
 	return finderPattern
@@ -84,25 +83,24 @@ func NewFinderPattern(version VersionId) *FinderPattern{
 // The top-left finder pattern's top left corner is always placed at (0,0).
 // The top-right finder pattern's top LEFT corner is always placed at ([(((V-1)*4)+21) - 7], 0)
 // The bottom-left finder pattern's top LEFT corner is always placed at (0,[(((V-1)*4)+21) - 7])
-func GetPositionAxes(p Position,version VersionId) *PositionAxes{
+func GetPositionAxes(p Position, version VersionId) *PositionAxes {
 	axes := new(PositionAxes)
 	switch p {
 	case TOP_LEFT:
 		axes.X = 0
 		axes.Y = 0
 	case TOP_RIGHT:
-		axes.X = (version - 1) * 4 + QRCODE_BASE_MODULE_SIZE - FINDER_PATTERN_MODULE_SIZE
+		axes.X = (version-1)*4 + QRCODE_BASE_MODULE_SIZE - FINDER_PATTERN_MODULE_SIZE
 		axes.Y = 0
 	case BOTTOM_LEFT:
 		axes.X = 0
-		axes.Y = (version - 1) * 4 + QRCODE_BASE_MODULE_SIZE - FINDER_PATTERN_MODULE_SIZE
+		axes.Y = (version-1)*4 + QRCODE_BASE_MODULE_SIZE - FINDER_PATTERN_MODULE_SIZE
 	}
 	return axes
 }
 
-
 // GetModules : 1：1:3:1:1 ,
-func (fp *FinderPattern) GetModules() [][]util.Module{
+func (fp *FinderPattern) GetModules() [][]util.Module {
 	modules := [][]util.Module{
 		{1, 1, 1, 1, 1, 1, 1},
 		{1, 0, 0, 0, 0, 0, 1},

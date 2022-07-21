@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 )
-
 
 // StrIn :Check target string is or not in strArray
 func StrIn(target string, strArray []string) bool {
@@ -31,18 +32,18 @@ func IntIn(target int, intArray []int) bool {
 }
 
 // IntToBinary : int change to binary array in []byte , array not full 8-bit
-func IntToBinary(i uint16) []Bit{
+func IntToBinary(i uint16) []Bit {
 	if i < 0 {
 		return nil
 	}
 
 	bLen := 0
-	for c:=i; c!=0;{
-		c = c>>1
+	for c := i; c != 0; {
+		c = c >> 1
 		bLen++
 	}
 	bytes := make([]Bit, bLen)
-	for ; i > 0; i, bLen = i / 2 , bLen-1 {
+	for ; i > 0; i, bLen = i/2, bLen-1 {
 		lsb := i % 2
 		bytes[bLen-1] = byte(lsb)
 	}
@@ -50,24 +51,24 @@ func IntToBinary(i uint16) []Bit{
 }
 
 // IntTo8BitArray : int change to binary array in []byte, and byte is 8-bit
-func IntTo8BitArray(i int) []Bit{
+func IntTo8BitArray(i int) []Bit {
 	if i < 0 {
 		return nil
-	}else if i == 0{
-		return []Bit{0,0,0,0,0,0,0,0}
+	} else if i == 0 {
+		return []Bit{0, 0, 0, 0, 0, 0, 0, 0}
 	}
 
 	bLen := 0
-	for c:=i; c!=0;{
-		c = c>>1
+	for c := i; c != 0; {
+		c = c >> 1
 		bLen++
 	}
-	raminBitLen := bLen%8
-	if raminBitLen >0 {
+	raminBitLen := bLen % 8
+	if raminBitLen > 0 {
 		bLen += 8 - raminBitLen
 	}
 	bytes := make([]byte, bLen)
-	for ; i > 0; i, bLen = i / 2 , bLen-1 {
+	for ; i > 0; i, bLen = i/2, bLen-1 {
 		lsb := i % 2
 		bytes[bLen-1] = byte(lsb)
 	}
@@ -75,31 +76,31 @@ func IntTo8BitArray(i int) []Bit{
 }
 
 // Bits8ToByte : convert 8 bits to 1 byte
-func Bits8ToByte(bitArray []Bit) byte{
+func Bits8ToByte(bitArray []Bit) byte {
 	if len(bitArray) != 8 {
 		panic(errors.New("input bit length is not 8"))
 	}
 	var bitsByte byte = 0
-	for i:=0; i <8 ; i++ {
-		bitsByte += bitArray[i]<<(7-i)
+	for i := 0; i < 8; i++ {
+		bitsByte += bitArray[i] << (7 - i)
 	}
 	return bitsByte
 }
 
 // BitsToByte : convert bits to 1 byte
-func BitsToByte(bitArray []Bit,bitLen int) byte{
+func BitsToByte(bitArray []Bit, bitLen int) byte {
 	if len(bitArray) != bitLen {
 		panic(errors.New("input bit length is not 8"))
 	}
 	var bitsByte byte = 0
-	for i:=0; i <bitLen ; i++ {
-		bitsByte += bitArray[i]<<(bitLen - 1 -i)
+	for i := 0; i < bitLen; i++ {
+		bitsByte += bitArray[i] << (bitLen - 1 - i)
 	}
 	return bitsByte
 }
 
-func ByteArrayToIntArray(data []byte) (dataInts []int){
-	dataInts = make([]int,len(data))
+func ByteArrayToIntArray(data []byte) (dataInts []int) {
+	dataInts = make([]int, len(data))
 	for i := 0; i < len(data); i++ {
 		dataInts[i] = int(data[i])
 	}
@@ -107,8 +108,8 @@ func ByteArrayToIntArray(data []byte) (dataInts []int){
 }
 
 // IntArrayToByteArray :convert int array to byte array
-func IntArrayToByteArray(data []int) (dataBytes []byte){
-	dataBytes = make([]byte,len(data))
+func IntArrayToByteArray(data []int) (dataBytes []byte) {
+	dataBytes = make([]byte, len(data))
 	for i := 0; i < len(data); i++ {
 		dataBytes[i] = byte(data[i])
 	}
@@ -118,9 +119,9 @@ func IntArrayToByteArray(data []int) (dataBytes []byte){
 // ByteArrayTo8BitArray :convert byte array to 8 bit array(1 byte split to 8 bit save in Bit array)
 // e.g. :
 // input : {byte(1)} result: {0,0,0,0,0,0,0,1}
-func ByteArrayTo8BitArray(data []byte) (dataBits []Bit){
+func ByteArrayTo8BitArray(data []byte) (dataBits []Bit) {
 	dataBitsLen := len(data) * 8
-	return ByteArrayTo8BitArrayWithCount(data,dataBitsLen)
+	return ByteArrayTo8BitArrayWithCount(data, dataBitsLen)
 }
 
 // ByteArrayTo8BitArrayWithCount :convert byte array to 8 bit array(1 byte split to 8 bit save in Bit array)
@@ -129,64 +130,63 @@ func ByteArrayTo8BitArray(data []byte) (dataBits []Bit){
 //
 // param data: input byte array
 // param bitsCount: total bit count for return
-func ByteArrayTo8BitArrayWithCount(data []byte,bitsCount int) (dataBits []Bit){
+func ByteArrayTo8BitArrayWithCount(data []byte, bitsCount int) (dataBits []Bit) {
 	dataLen := len(data)
-	if dataLen == 0 || bitsCount == 0{
+	if dataLen == 0 || bitsCount == 0 {
 		return nil
 	}
-	dataBits = make([]Bit,0,bitsCount)
+	dataBits = make([]Bit, 0, bitsCount)
 	for i := 0; i < dataLen; i++ {
-		arr:= IntTo8BitArray(int(data[i]))
+		arr := IntTo8BitArray(int(data[i]))
 		if len(dataBits)+len(arr) > bitsCount {
-			arr = arr[bitsCount - len(dataBits):]
+			arr = arr[bitsCount-len(dataBits):]
 		}
-		dataBits = append(dataBits,arr...)
+		dataBits = append(dataBits, arr...)
 	}
 	return dataBits
 }
 
-
-func RunCmd(command string,args... string)(result string,err error){
+func RunCmd(command string, args ...string) (result string, err error) {
 	defer func() {
-		if rev:=recover();rev!=nil{
+		if rev := recover(); rev != nil {
 			result = ""
 			err = errors.New("verify error")
 		}
 	}()
-	cmd := exec.Command(command,args...)
+	cmd := exec.Command(command, args...)
 	//show cmd
 	fmt.Println(cmd)
-	if out,err:=cmd.Output();err == nil{
+	if out, err := cmd.Output(); err == nil {
 		o := string(out)
-		if strings.LastIndex(o,"\n")>-1{
-			o = o[:len(o) -1]
+		if strings.LastIndex(o, "\n") > -1 {
+			o = o[:len(o)-1]
 		}
-		return o,err
-	}else{
-		return string(out),err
+		return o, err
+	} else {
+		return string(out), err
 	}
-	return result,nil
+	return result, nil
 }
 
 // IteratorTwoByte : iterate by two-byte
 // param: data,two-byte strings
 func IteratorTwoByte(data string) <-chan uint16 {
 	dataLen := len(data)
-	if dataLen % 2 > 0 {
+	if dataLen%2 > 0 {
 		panic(errors.New("NOT Two-byte String! "))
 	}
 	twoByteChain := make(chan uint16)
 	go func() {
-		loop := dataLen/2
-		for i:=0; i<loop;i++ {
+		loop := dataLen / 2
+		for i := 0; i < loop; i++ {
 			startIdx := i * 2
-			endIdx:= startIdx + 2
+			endIdx := startIdx + 2
 			if endIdx > dataLen {
 				endIdx = dataLen
 			}
 			twoByte := ([]byte(data))[startIdx:endIdx]
-			twoByteInt :=  uint16(twoByte[0])<<8 | uint16(twoByte[1])
-			twoByteChain<-twoByteInt
+			twoByteInt := uint16(twoByte[0])<<8 | uint16(twoByte[1])
+			twoByteChain <- twoByteInt
 		}
 		close(twoByteChain)
 	}()
@@ -195,21 +195,21 @@ func IteratorTwoByte(data string) <-chan uint16 {
 
 func IteratorTwoByteEach(data string) <-chan []uint16 {
 	dataLen := len(data)
-	if dataLen % 2 > 0 {
+	if dataLen%2 > 0 {
 		panic(errors.New("NOT Two-byte String! "))
 	}
 	twoByteChain := make(chan []uint16)
 	go func() {
-		loop := dataLen/2
-		for i:=0; i<loop;i++ {
+		loop := dataLen / 2
+		for i := 0; i < loop; i++ {
 			startIdx := i * 2
-			endIdx:= startIdx + 2
+			endIdx := startIdx + 2
 			if endIdx > dataLen {
 				endIdx = dataLen
 			}
 			twoByte := ([]byte(data))[startIdx:endIdx]
-			fmt.Printf("each %v ",twoByte)
-			twoByteChain<-[]uint16{uint16(twoByte[0])<<8,uint16(twoByte[1])}
+			fmt.Printf("each %v ", twoByte)
+			twoByteChain <- []uint16{uint16(twoByte[0]) << 8, uint16(twoByte[1])}
 		}
 		close(twoByteChain)
 	}()
@@ -217,11 +217,12 @@ func IteratorTwoByteEach(data string) <-chan []uint16 {
 }
 
 type Base64URLImageType string
+
 const (
-	GifType Base64URLImageType = "gif"
-	PngType Base64URLImageType = "png"
+	GifType  Base64URLImageType = "gif"
+	PngType  Base64URLImageType = "png"
 	JpegType Base64URLImageType = "jpeg"
-	SvgType Base64URLImageType = "svg+xml"
+	SvgType  Base64URLImageType = "svg+xml"
 )
 
 // ImageToBase64Url :
@@ -229,6 +230,34 @@ const (
 // data:image/png;base64, // png
 // data:image/jpeg;base64,//jpeg
 // data:image/svg+xml;base64 //svg
-func ImageToBase64Url(imageType Base64URLImageType,imageByte []byte) string{
-	return "data:image/"+ string(imageType) +";base64,"+base64.StdEncoding.EncodeToString(imageByte)
+func ImageToBase64Url(imageType Base64URLImageType, imageByte []byte) string {
+	return "data:image/" + string(imageType) + ";base64," + base64.StdEncoding.EncodeToString(imageByte)
+}
+
+// Parallel parallel processes the data in separate goroutines.
+func Parallel(start, stop int, fn func(<-chan int)) {
+	count := stop - start
+	if count < 1 {
+		return
+	}
+
+	procs := runtime.GOMAXPROCS(0)
+	if procs > count {
+		procs = count
+	}
+	c := make(chan int, count)
+	for i := start; i < stop; i++ {
+		c <- i
+	}
+	close(c)
+
+	var wg sync.WaitGroup
+	for i := 0; i < procs; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fn(c)
+		}()
+	}
+	wg.Wait()
 }

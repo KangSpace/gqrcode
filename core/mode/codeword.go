@@ -1,9 +1,9 @@
 package mode
 
 import (
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/core/model"
-	"github.com/gqrcode/util"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/core/model"
+	"github.com/KangSpace/gqrcode/util"
 )
 
 // Define Code Words handle
@@ -33,30 +33,30 @@ const (
 
 var PadCodewords = map[cons.Format][][]byte{
 	// 8 bit length for QRCode symbols
-	cons.QRCODE: {{1,1,1,0,1,1,0,0},{0,0,0,1,0,0,0,1}},
+	cons.QRCODE: {{1, 1, 1, 0, 1, 1, 0, 0}, {0, 0, 0, 1, 0, 0, 0, 1}},
 	// 4 bits length for Micro QR Code M1 and M3 symbols
-	cons.MicroQrcode: {{0,0,0,0},{0,0,0,0}},
+	cons.MicroQrcode: {{0, 0, 0, 0}, {0, 0, 0, 0}},
 }
 
-func (m *AbstractMode) BuildCodewords(qr *QRCodeStruct,dataStream *util.DataStream){
+func (m *AbstractMode) BuildCodewords(qr *QRCodeStruct, dataStream *util.DataStream) {
 	version := qr.Version
 	versionId := version.Id
 
 	// Micro QR Code version M1 and M3 symbols,which is 4 bits in length
-	if model.VERSION_M1 == versionId || model.VERSION_M3 == versionId {
+	if model.VersionM1 == versionId || model.VersionM3 == versionId {
 		//	all codewords are `4 bits in length`
-		m.buildDataCodewords(qr,dataStream, cons.MicroQrcode, MicroQrcodeM1M3CodewordBit)
-	}else{
+		m.buildDataCodewords(qr, dataStream, cons.MicroQrcode, MicroQrcodeM1M3CodewordBit)
+	} else {
 		//	all codewords are `8 bits in length`
-		m.buildDataCodewords(qr,dataStream, cons.QRCODE, QrcodeCodewordBit)
+		m.buildDataCodewords(qr, dataStream, cons.QRCODE, QrcodeCodewordBit)
 	}
 }
 
-func (m *AbstractMode) buildDataCodewords(qr *QRCodeStruct,dataStream *util.DataStream,format cons.Format,codewordBit CodewordBit)  {
+func (m *AbstractMode) buildDataCodewords(qr *QRCodeStruct, dataStream *util.DataStream, format cons.Format, codewordBit CodewordBit) {
 	dataStreamLen := dataStream.GetCount()
 	codewordsRemain := dataStreamLen % codewordBit
-	if codewordsRemain >0 {
-		dataStream.AddBit(nil, codewordBit - codewordsRemain)
+	if codewordsRemain > 0 {
+		dataStream.AddBit(nil, codewordBit-codewordsRemain)
 	}
 	version := qr.Version
 	ec := qr.ErrorCorrection
@@ -65,11 +65,11 @@ func (m *AbstractMode) buildDataCodewords(qr *QRCodeStruct,dataStream *util.Data
 	dataStreamLen = dataStream.GetCount()
 	padCodewordsBitLen := numberOfDataBits - dataStreamLen
 	// fill the Pad Codewords
-	if padCodewordsBitLen >0{
+	if padCodewordsBitLen > 0 {
 		//logger.Info("buildDataCodewords fill the Pad Codewords: numberOfDataBits:"+ strconv.Itoa(numberOfDataBits)+
 		//	" dataStreamLen:"+strconv.Itoa(dataStreamLen)+", data ramin:"+ strconv.Itoa(padCodewordsBitLen%codewordBit))
-		for i:=0;i< padCodewordsBitLen/codewordBit;i++{
-			dataStream.AddBit(PadCodewords[format][i%2] ,codewordBit)
+		for i := 0; i < padCodewordsBitLen/codewordBit; i++ {
+			dataStream.AddBit(PadCodewords[format][i%2], codewordBit)
 		}
 	}
 }

@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/core/mode"
-	"github.com/gqrcode/core/model"
-	"github.com/gqrcode/core/output"
-	"github.com/gqrcode/util"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/core/mode"
+	"github.com/KangSpace/gqrcode/core/model"
+	"github.com/KangSpace/gqrcode/core/output"
+	"github.com/KangSpace/gqrcode/util"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 	"image"
@@ -22,71 +22,71 @@ import (
 	"testing"
 	"time"
 )
-var home = os.Getenv("HOME")
-var gqrcodePath = home +"/Desktop/gqrcode/"
-var currentPath,_ = os.Getwd()
 
+var home = os.Getenv("HOME")
+var gqrcodePath = home + "/Desktop/gqrcode/"
+var currentPath, _ = os.Getwd()
 
 // -----------------------------TestAllNumericQRCode----------------------------------
 // TestAllNumericQRCode :Test all numeric string for QRCode by 1 to 7089 length of string.
 // e.g.: 0,01,012,0123....
 // --- PASS: TestAllNumericQRCode (990.46s)
-func TestAllNumericQRCode(t *testing.T){
+func TestAllNumericQRCode(t *testing.T) {
 	fmt.Println("TestAllNumericQRCode:")
-	testFile := currentPath +"/../doc/test/numeric_test/nmb.txt"
-	resultPath := currentPath +"/../doc/test/numeric_test/imgs/"
-	reportFile := currentPath +"/../doc/test/numeric_test/test_report.csv"
+	testFile := currentPath + "/../doc/test/numeric_test/nmb.txt"
+	resultPath := currentPath + "/../doc/test/numeric_test/imgs/"
+	reportFile := currentPath + "/../doc/test/numeric_test/test_report.csv"
 	dataRowCount := 7089
-	AllQRCodeTest(testFile,resultPath,reportFile,dataRowCount,t)
+	AllQRCodeTest(testFile, resultPath, reportFile, dataRowCount, t)
 }
 
-func AllQRCodeTest(testFile,resultPath,reportFile string,dataRowCount int,t *testing.T){
-	os.Mkdir(resultPath,os.ModePerm)
-	if err:= initVerifyQRCodeByPythonEnv();err !=nil{
+func AllQRCodeTest(testFile, resultPath, reportFile string, dataRowCount int, t *testing.T) {
+	os.Mkdir(resultPath, os.ModePerm)
+	if err := initVerifyQRCodeByPythonEnv(); err != nil {
 		fmt.Println("python environment init failed.")
 		t.Fatal(err)
-	}else{
+	} else {
 		fmt.Println("python environment init success.")
 	}
 
-	wg :=sync.WaitGroup{}
+	wg := sync.WaitGroup{}
 
 	// read test data file
-	if file,err:=os.Open(testFile);err == nil{
+	if file, err := os.Open(testFile); err == nil {
 		defer file.Close()
-		rd := bufio.NewReaderSize(file,dataRowCount)
+		rd := bufio.NewReaderSize(file, dataRowCount)
 		// result str: [qgrcode result],[time/Milliseconds],[python result],[python return str],[data]
-		resultStr :="[qgrcode result],[time/Milliseconds],[python result],[python err][data]\n"
+		resultStr := "[qgrcode result],[time/Milliseconds],[python result],[python err][data]\n"
 		lop := true
-		allData := make([]string,0,dataRowCount)
-		for i:= 0; lop;i++{
-			data_, isEnd,err := rd.ReadLine()
+		allData := make([]string, 0, dataRowCount)
+		for i := 0; lop; i++ {
+			data_, isEnd, err := rd.ReadLine()
 			data := string(data_)
-			if err != nil || io.EOF == err|| isEnd {
+			if err != nil || io.EOF == err || isEnd {
 				lop = false
 			}
-			allData = append(allData,data)
+			allData = append(allData, data)
 		}
 		routineCount := 20
-		dataCountPerRoutine :=  dataRowCount/routineCount
-		if dataRowCount % routineCount> 0 {
+		dataCountPerRoutine := dataRowCount / routineCount
+		if dataRowCount%routineCount > 0 {
 			routineCount += 1
 		}
 		wg.Add(routineCount)
 		lock := sync.Mutex{}
-		for i:=0;i<routineCount;i++{
+		for i := 0; i < routineCount; i++ {
 			startIdx := i * dataCountPerRoutine
 			endIdx := startIdx + dataCountPerRoutine
 			var subDatas []string
 			if endIdx > dataRowCount {
 				endIdx = dataRowCount
 			}
-			subDatas = allData[startIdx: endIdx]
+			subDatas = allData[startIdx:endIdx]
 			go func(subDatas []string) {
-				for _,data := range subDatas{
+				for _, data := range subDatas {
 					dataLen := len(data)
-					fileName := resultPath + strconv.Itoa(dataLen)+".png"
-					result := singleQrCodeGenerateVerify(data,fileName)
+					fileName := resultPath + strconv.Itoa(dataLen) + ".png"
+					result := singleQrCodeGenerateVerify(data, fileName)
 
 					lock.Lock()
 					// multi goroutine lock
@@ -102,63 +102,64 @@ func AllQRCodeTest(testFile,resultPath,reportFile string,dataRowCount int,t *tes
 		wg.Wait()
 
 		if resultStr != "" {
-			if reportF,err := os.Create(reportFile);err == nil{
+			if reportF, err := os.Create(reportFile); err == nil {
 				defer reportF.Close()
 				reportF.WriteString(resultStr)
-			}else{
-				fmt.Printf("report :\n"+resultStr)
+			} else {
+				fmt.Printf("report :\n" + resultStr)
 				t.Fatal(err)
 			}
 		}
-	}else{
+	} else {
 		t.Fatal(err)
 	}
 }
 
 // generate qrcode by gqrcode(record time), and verify the qrcode by python pyzbar(record valid result).
-func singleQrCodeGenerateVerify(data,fileName string) (result string){
+func singleQrCodeGenerateVerify(data, fileName string) (result string) {
 	startTime := time.Now()
 	tempResult := ""
-	if err := generateTestQRCode(data,fileName); err == nil{
+	if err := generateTestQRCode(data, fileName); err == nil {
 		cost := time.Since(startTime).Milliseconds()
-		tempResult+="true,"+ fmt.Sprintf("%d", cost) +","
+		tempResult += "true," + fmt.Sprintf("%d", cost) + ","
 		// verify qrcode
-		if pyResult,err := VerifyQRCodeByPython(fileName);err == nil{
-			tempResult+=strconv.FormatBool(data == pyResult)+","
-		}else{
-			tempResult+= "false,"+err.Error()
+		if pyResult, err := VerifyQRCodeByPython(fileName); err == nil {
+			tempResult += strconv.FormatBool(data == pyResult) + ","
+		} else {
+			tempResult += "false," + err.Error()
 		}
-		tempResult+=","+data
-	}else{
-		tempResult+="false,0,false,,"+data
+		tempResult += "," + data
+	} else {
+		tempResult += "false,0,false,," + data
 		fmt.Println(err.Error())
 	}
 	tempResult += "\n"
 	return tempResult
 }
 
-func generateTestQRCode(data string,fileName string) error{
-	if qr,err := NewQRCode(data);err == nil{
-		err = qr.Encode(output.NewPNGOutput0(),fileName)
+func generateTestQRCode(data string, fileName string) error {
+	if qr, err := NewQRCode(data); err == nil {
+		err = qr.Encode(output.NewPNGOutput0(), fileName)
 		return err
-	}else{
+	} else {
 		return err
 	}
 }
 
 // TODO Need Change python3 to your python
 var verifyQRCodeByPythonCmd = "python3"
-var verifyArg0 = currentPath +"/../doc/test/run.py"
+var verifyArg0 = currentPath + "/../doc/test/run.py"
+
 // TODO Need Change pip3 to your pip
 var verifyQRCodeByPythonInitEnvCmd = "pip3"
-var envArg = []string{"install", "qrcode", "pillow", "image" ,"zxing"}
+var envArg = []string{"install", "qrcode", "pillow", "image", "zxing"}
 
-func initVerifyQRCodeByPythonEnv() (err error){
+func initVerifyQRCodeByPythonEnv() (err error) {
 	fmt.Println("init python environment!")
-	if result,err :=util.RunCmd(verifyQRCodeByPythonInitEnvCmd, envArg...);err == nil{
+	if result, err := util.RunCmd(verifyQRCodeByPythonInitEnvCmd, envArg...); err == nil {
 		fmt.Println(result)
 		return nil
-	}else{
+	} else {
 		return err
 	}
 
@@ -166,37 +167,35 @@ func initVerifyQRCodeByPythonEnv() (err error){
 
 // Python decoder(zxing) maybe so slow(because it's implement by java jar in side.)
 // The decoder is python pyzbar in here.
-func VerifyQRCodeByPython(fileName string) (result string, err error){
-	fmt.Println("Verify:"+fileName)
-	return util.RunCmd(verifyQRCodeByPythonCmd, verifyArg0,fileName)
+func VerifyQRCodeByPython(fileName string) (result string, err error) {
+	fmt.Println("Verify:" + fileName)
+	return util.RunCmd(verifyQRCodeByPythonCmd, verifyArg0, fileName)
 }
-
-
 
 // -----------------------------TestNumericQRCode----------------------------------
 
 func TestPng(t *testing.T) {
 	fmt.Println(home)
-	file,_:=os.Create(home +"/Desktop/i.png")
+	file, _ := os.Create(home + "/Desktop/i.png")
 	defer file.Close()
-	img := image.NewRGBA(image.Rect(0,0,100,100))
-	img.Set(50,50,color.Black)
-	img.Set(101,101,color.Black)
-	img.Set(99,99,color.Black)
-	img.Set(100,100,color.Black)
-	img.Set(1,1,color.White)
-	fmt.Println("pix:" )
-	fmt.Println("50,50:",img.At (50,50))
-	fmt.Println("1,1:",img.At (1,1))
-	fmt.Println("10,10:",img.At (10,10))
-	fmt.Println("90,90:",img.At (99,99))
-	fmt.Println("100,100:",img.At (100,100))
-	fmt.Println("101,101:",img.At (101,101))
+	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
+	img.Set(50, 50, color.Black)
+	img.Set(101, 101, color.Black)
+	img.Set(99, 99, color.Black)
+	img.Set(100, 100, color.Black)
+	img.Set(1, 1, color.White)
+	fmt.Println("pix:")
+	fmt.Println("50,50:", img.At(50, 50))
+	fmt.Println("1,1:", img.At(1, 1))
+	fmt.Println("10,10:", img.At(10, 10))
+	fmt.Println("90,90:", img.At(99, 99))
+	fmt.Println("100,100:", img.At(100, 100))
+	fmt.Println("101,101:", img.At(101, 101))
 	fmt.Println(img.Opaque())
-	if err:=png.Encode(file,img);err!= nil{
+	if err := png.Encode(file, img); err != nil {
 		t.Fatal(err)
-	}else{
-		fileInfo,_ :=file.Stat()
+	} else {
+		fileInfo, _ := file.Stat()
 		fmt.Println(fileInfo.Name())
 	}
 }
@@ -223,18 +222,18 @@ func TestNewNumeric1QRCode(t *testing.T) {
 	fmt.Println(len(data))
 	//data := "8675309"
 	fileNamePrefix := "numeric"
-	fileName := gqrcodePath + fileNamePrefix+".png"
+	fileName := gqrcodePath + fileNamePrefix + ".png"
 	//out := output.NewPNGOutput(100)
 	out := output.NewPNGOutput0()
 	//out := output.NewGIFOutput0()
 	//qrcode, err := NewQRCode0(data, core.QRCODE_MODEL2,mode.NewErrorCorrection(core.L),mode.NewNumericMode())
 	qrcode, err := NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("SUCCESS,"+fileName)
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("SUCCESS," + fileName)
 }
 
 // TestNewNumeric4SizeQRCode :
@@ -247,67 +246,67 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	//data := "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
 	//data := "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
 	data := "8675309"
-	fileNamePrefix:="7089"
-	imageSize := 200
+	fileNamePrefix := "7089"
+	imageSize := 400
 	// 7090 numeric
 	//data := "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
 	//fileNamePrefix:="7090"
-	fmt.Println("data length:"+ strconv.Itoa( len(data)))
+	fmt.Println("data length:" + strconv.Itoa(len(data)))
 
 	//data := "8675309"
-	fileName := gqrcodePath +fileNamePrefix+"_auto_size_no_quiet.png"
-	fmt.Println("test case1:"+fileName)
+	fileName := gqrcodePath + fileNamePrefix + "_auto_size_no_quiet.png"
+	fmt.Println("test case1:" + fileName)
 	//out := output.NewPNGOutput(100)
 	out := output.NewPNGOutput0()
 	//quietZone := model.AutoQuietZone
 	quietZone := model.NoneQuietZone
 	//quietZone := model.NewQuietZone(2)
-	qrcode, err := NewQRCode0(data, cons.QrcodeModel2,nil,mode.NewNumericMode(),quietZone)
+	qrcode, err := NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	//qrcode, err := core.NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
+	qrcode.Encode(out, fileName)
 
-	fileName = gqrcodePath +fileNamePrefix+"_auto_size_auto_quiet.png"
-	fmt.Println("test case2:"+fileName)
+	fileName = gqrcodePath + fileNamePrefix + "_auto_size_auto_quiet.png"
+	fmt.Println("test case2:" + fileName)
 	//out = output.NewPNGOutput(100)
 	out = output.NewPNGOutput0()
 	quietZone = model.AutoQuietZone
 	//quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2,nil,mode.NewNumericMode(),quietZone)
+	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	//qrcode, err := core.NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
+	qrcode.Encode(out, fileName)
 
-	fileName = gqrcodePath +fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_no_quiet.png"
-	fmt.Println("test case3:"+fileName)
+	fileName = gqrcodePath + fileNamePrefix + "_" + (strconv.Itoa(imageSize)) + "_size_no_quiet.png"
+	fmt.Println("test case3:" + fileName)
 	out = output.NewPNGOutput(imageSize)
 	//out = output.NewPNGOutput0()
 	//quietZone = model.AutoQuietZone
 	quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2,nil,mode.NewNumericMode(),quietZone)
-	if err != nil{
+	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
+	qrcode.Encode(out, fileName)
 
-	fileName = gqrcodePath +fileNamePrefix+"_"+(strconv.Itoa(imageSize))+"_size_auto_quiet.png"
-	fmt.Println("test case4:"+fileName)
+	fileName = gqrcodePath + fileNamePrefix + "_" + (strconv.Itoa(imageSize)) + "_size_auto_quiet.png"
+	fmt.Println("test case4:" + fileName)
 	out = output.NewPNGOutput(imageSize)
 	//out = output.NewPNGOutput0()
 	quietZone = model.AutoQuietZone
 	//quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2,nil,mode.NewNumericMode(),quietZone)
-	if err != nil{
+	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
+	qrcode.Encode(out, fileName)
 
 	fmt.Println("SUCCESS")
 }
@@ -322,20 +321,20 @@ func TestAlphanumericQRCode(t *testing.T) {
 	data := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
 	fmt.Println(len(data))
 	fileNamePrefix := "alphanumeric"
-	fileName := gqrcodePath + fileNamePrefix+".jpg"
+	fileName := gqrcodePath + fileNamePrefix + ".jpg"
 	out := output.NewJPGOutput0()
 	qrcode, err := NewQRCodeAutoQuiet(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 	//initVerifyQRCodeByPythonEnv()
-	if result,err:= VerifyQRCodeByPython(fileName);err==nil{
-		fmt.Println("SUCCESS,"+result)
-	}else{
-		fmt.Println("FAIL,"+result)
+	if result, err := VerifyQRCodeByPython(fileName); err == nil {
+		fmt.Println("SUCCESS," + result)
+	} else {
+		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
 }
@@ -343,11 +342,11 @@ func TestAlphanumericQRCode(t *testing.T) {
 // TestAllAlphanumericQRCode :Test all alphanumeric string for QRCode by 1 to 4296 length of string.
 func TestAllAlphanumericQRCode(t *testing.T) {
 	fmt.Println("TestAllAlphanumericQRCode:")
-	testFile := currentPath +"/../doc/test/numeric_test/nmb.txt"
-	resultPath := currentPath +"/../doc/test/numeric_test/imgs/"
-	reportFile := currentPath +"/../doc/test/numeric_test/test_report.csv"
+	testFile := currentPath + "/../doc/test/numeric_test/nmb.txt"
+	resultPath := currentPath + "/../doc/test/numeric_test/imgs/"
+	reportFile := currentPath + "/../doc/test/numeric_test/test_report.csv"
 	dataRowCount := 4296
-	AllQRCodeTest(testFile,resultPath,reportFile,dataRowCount,t)
+	AllQRCodeTest(testFile, resultPath, reportFile, dataRowCount, t)
 }
 
 // -----------------------------TestByteQRCode----------------------------------
@@ -356,20 +355,20 @@ func TestByteQRCode(t *testing.T) {
 	data := "https://kangspace.org"
 	fmt.Println(len(data))
 	fileNamePrefix := "byte"
-	fileName := gqrcodePath + fileNamePrefix+".gif"
+	fileName := gqrcodePath + fileNamePrefix + ".gif"
 	out := output.NewGIFOutput0()
 	qrcode, err := NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 	//initVerifyQRCodeByPythonEnv()
-	if result,err:= VerifyQRCodeByPython(fileName);err==nil{
-		fmt.Println("SUCCESS,"+result)
-	}else{
-		fmt.Println("FAIL,"+result)
+	if result, err := VerifyQRCodeByPython(fileName); err == nil {
+		fmt.Println("SUCCESS," + result)
+	} else {
+		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
 }
@@ -381,25 +380,25 @@ func TestByteQRCodeBase64(t *testing.T) {
 	fileNamePrefix := "base64"
 	out := output.NewJPGOutput0()
 	qrcode, err := NewQRCodeAutoQuiet(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	base64,err:= qrcode.EncodeToBase64(out)
-	fmt.Println(fileNamePrefix+",png:"+base64)
-	base64,err = qrcode.EncodeToBase64(output.NewJPGOutput0())
-	fmt.Println(fileNamePrefix+",jpg:"+base64)
-	base64,err = qrcode.EncodeToBase64(output.NewGIFOutput0())
-	fmt.Println(fileNamePrefix+",gif:"+base64)
+	base64, err := qrcode.EncodeToBase64(out)
+	fmt.Println(fileNamePrefix + ",png:" + base64)
+	base64, err = qrcode.EncodeToBase64(output.NewJPGOutput0())
+	fmt.Println(fileNamePrefix + ",jpg:" + base64)
+	base64, err = qrcode.EncodeToBase64(output.NewGIFOutput0())
+	fmt.Println(fileNamePrefix + ",gif:" + base64)
 
-	fileName := gqrcodePath + fileNamePrefix+".png"
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
+	fileName := gqrcodePath + fileNamePrefix + ".png"
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 	//initVerifyQRCodeByPythonEnv()
-	if result,err:= VerifyQRCodeByPython(fileName);err==nil{
-		fmt.Println("SUCCESS,"+result)
-	}else{
-		fmt.Println("FAIL,"+result)
+	if result, err := VerifyQRCodeByPython(fileName); err == nil {
+		fmt.Println("SUCCESS," + result)
+	} else {
+		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
 }
@@ -410,80 +409,77 @@ func TestByteChineseQRCode(t *testing.T) {
 	data := "1234567891234你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!你好，世界！Hello World!"
 	fmt.Println(len(data))
 	fileNamePrefix := "byte-utf8"
-	fileName := gqrcodePath + fileNamePrefix+".gif"
+	fileName := gqrcodePath + fileNamePrefix + ".gif"
 	out := output.NewGIFOutput0()
 	qrcode, err := NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 	//initVerifyQRCodeByPythonEnv()
-	if result,err:= VerifyQRCodeByPython(fileName);err==nil{
-		fmt.Println("SUCCESS,"+result)
-	}else{
-		fmt.Println("FAIL,"+result)
+	if result, err := VerifyQRCodeByPython(fileName); err == nil {
+		fmt.Println("SUCCESS," + result)
+	} else {
+		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
 }
 
-
 // TestByteQRCodeWithLogo :Test byte qrcode with logo
 func TestByteQRCodeWithLogo(t *testing.T) {
 	data := "https://kangspace.org"
-	logoImageFilePath := currentPath +"/../doc/images/qr/kangspace_logo.png"
+	logoImageFilePath := currentPath + "/../doc/images/qr/kangspace_logo.png"
 	//logoImageFilePath := currentPath+"/../doc/images/qr/bd.png"
 	fileNamePrefix := "qrcode_with_logo"
 	// 264,429
 	out := output.NewJPGOutput(1000)
 	out.AddOption(output.LogoOption(logoImageFilePath))
 	qrcode, err := NewQRCodeAutoQuiet(data)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
-	fileName := gqrcodePath + fileNamePrefix+".png"
-	err = qrcode.Encode(out,fileName)
+	fileName := gqrcodePath + fileNamePrefix + ".png"
+	err = qrcode.Encode(out, fileName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("moduleSize:%v, version:%v, size:%d, ec:%v mode:%s \n",qrcode.GetModuleSize(),qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
-	fmt.Printf("RecommendSize:%d \n" ,out.GetRecommendSize(qrcode.GetModuleSize()))
+	fmt.Printf("moduleSize:%v, version:%v, size:%d, ec:%v mode:%s \n", qrcode.GetModuleSize(), qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
+	fmt.Printf("RecommendSize:%d \n", out.GetRecommendSize(qrcode.GetModuleSize()))
 }
-
 
 // -----------------------------TestKanjiQRCode----------------------------------
 func TestKanjiQRCode(t *testing.T) {
-	data := "茗荷"//日月
+	data := "茗荷" //日月
 	//data := "はの"
-	data,err := ToShiftJIS(data)
+	data, err := ToShiftJIS(data)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("dataLen:%d\n", len(data))
 	fileNamePrefix := "kanji"
-	fileName := gqrcodePath + fileNamePrefix+".png"
+	fileName := gqrcodePath + fileNamePrefix + ".png"
 	out := output.NewPNGOutput0()
 	qrcode, err := NewQRCode(data)
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 		t.Fatal(err)
 	}
-	qrcode.Encode(out,fileName)
-	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n",qrcode.Version,out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("fileName,"+fileName)
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 	//initVerifyQRCodeByPythonEnv()
-	if result,err:= VerifyQRCodeByPython(fileName);err==nil{
-		fmt.Println("SUCCESS,"+result)
-	}else{
-		fmt.Println("FAIL,"+result)
+	if result, err := VerifyQRCodeByPython(fileName); err == nil {
+		fmt.Println("SUCCESS," + result)
+	} else {
+		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
 }
 
-
-func transformEncoding( rawReader io.Reader, trans transform.Transformer) (string, error) {
+func transformEncoding(rawReader io.Reader, trans transform.Transformer) (string, error) {
 	ret, err := ioutil.ReadAll(transform.NewReader(rawReader, trans))
 	if err == nil {
 		return string(ret), nil
@@ -491,7 +487,64 @@ func transformEncoding( rawReader io.Reader, trans transform.Transformer) (strin
 		return "", err
 	}
 }
+
 // Convert a string encoding from UTF-8 to ShiftJIS
 func ToShiftJIS(str string) (string, error) {
 	return transformEncoding(strings.NewReader(str), japanese.ShiftJIS.NewEncoder())
+}
+
+// TestAllVersionBestQRCodeImageSize : 各版本二维码最佳尺寸(使用4倍像素表示)
+func TestAllVersionBestQRCodeImageSize(t *testing.T) {
+	fmt.Println("Best size of QR code of each version. (1 point by 4 pixels!)")
+	fmt.Println("Version\t 0QuietZone\t 1QuietZone\t 2QuietZone\t 4QuietZone\t maxCharacterLen(AlphaNumeric)\t")
+	allSize := make([]int, 0)
+	versions := model.Versions
+	quiteZones := model.QuietZones
+	for _, version := range versions {
+		versionName := strconv.Itoa(version.Id)
+		if version.Id < 0 {
+			versionName, _ = model.VersionM1ToM4IdNameMap[version.Id]
+		}
+		fmt.Printf("%s\t", versionName)
+		for _, qz := range quiteZones {
+			out := output.NewJPGOutput0()
+			out.Init(version, qz)
+			size := out.GetBaseOutput().Size
+			allSize = append(allSize, size)
+			fmt.Printf("%d\t", size)
+		}
+		ecMap, _ := model.VersionSymbolCharsAndInputDataCapacityMap[version.Id]
+		ec := cons.L
+		mode := cons.AlphanumericMode
+		desc := ""
+		if version.Id == model.VersionM1 {
+			ec = cons.NONE
+			mode = cons.NumericMode
+			desc = "(Numeric)"
+		}
+
+		dataCapacity, _ := ecMap[ec].DataCapacity[mode]
+		fmt.Printf("%d%s\t", dataCapacity, desc)
+		fmt.Println("")
+	}
+	fmt.Println(allSize)
+}
+
+/*a:= allSize[0]
+for i := 0; i < len(allSize)-2; i++ {
+	b := allSize[i+1]
+	gcdVal = (a * b) / gcd(a, b)
+	a = gcdVal
+	fmt.Println("a,b:",a,",",b,"-> val:",gcdVal)
+}
+fmt.Println("gcd:", a)*/
+
+func gcd(a, b int) int {
+	if a < b {
+		a, b = b, a
+	}
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
 }

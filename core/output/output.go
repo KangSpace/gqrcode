@@ -1,7 +1,7 @@
 package output
 
 import (
-	"github.com/gqrcode/core/model"
+	"github.com/KangSpace/gqrcode/core/model"
 	"image"
 	"image/color"
 	"math"
@@ -14,16 +14,16 @@ type OptionName = string
 
 // Option : Output Option
 type Option struct {
-	Name OptionName
+	Name  OptionName
 	Value string
 }
 
 // defined OutputType constants
 const (
-	JPG Type= iota // 0
-	PNG // 1
-	GIF // 2
-	SVG // 3
+	JPG Type = iota // 0
+	PNG             // 1
+	GIF             // 2
+	SVG             // 3
 
 	// AUTO_SIZE : set auto size for qrcode , per module fill by 4 pixels
 	AUTO_SIZE = 0
@@ -35,36 +35,35 @@ type BaseOutput struct {
 	// image type
 	Type Type
 	// image width/height
-	Size int
+	Size    int
 	Options []*Option
 	modules [][]*bool
 }
 
-
 // LogoOption :  Option for add logo image at center of QRCode
-func LogoOption(logoImage string) *Option{
-	return &Option{Name: LogoOptionName,Value: logoImage}
+func LogoOption(logoImage string) *Option {
+	return &Option{Name: LogoOptionName, Value: logoImage}
 }
 
 // containLogoOption : Check whether contain LogoOption option or not
-func (out *BaseOutput) containLogoOption() *Option{
-	for _,opt:=range out.Options{
-		if opt.Name == LogoOptionName{
+func (out *BaseOutput) containLogoOption() *Option {
+	for _, opt := range out.Options {
+		if opt.Name == LogoOptionName {
 			return opt
 		}
 	}
 	return nil
 }
 
-func (out *BaseOutput) AddOption(options... *Option){
-	out.Options = append(out.Options,options...)
+func (out *BaseOutput) AddOption(options ...*Option) {
+	out.Options = append(out.Options, options...)
 }
 
-func (out *BaseOutput) IsModuleSet(x int,y int) bool{
+func (out *BaseOutput) IsModuleSet(x int, y int) bool {
 	return out.modules[x][y] != nil
 }
 
-func (out *BaseOutput) GetModule(x int,y int) bool{
+func (out *BaseOutput) GetModule(x int, y int) bool {
 	return out.modules[x][y] != nil && *out.modules[x][y]
 }
 
@@ -72,22 +71,21 @@ func (out *BaseOutput) GetModule(x int,y int) bool{
 type Output interface {
 	GetBaseOutput() *BaseOutput
 	// Init :init for output when size is AUTO_SIZE
-	Init(version *model.Version,qz *model.QuietZone)
-	Write(x int,y int, black bool)
+	Init(version *model.Version, qz *model.QuietZone)
+	Write(x int, y int, black bool)
 	// WriteModule :write per module by pixelSize
-	WriteModule(x int,y int, black bool,pixelSize int)
-	WriteModuleColor(x int,y int, dark bool, setColor color.Color,pixelSize int)
+	WriteModule(x int, y int, black bool, pixelSize int)
+	WriteModuleColor(x int, y int, dark bool, setColor color.Color, pixelSize int)
 	// IsModuleSet : check the module whether or not be set
-	IsModuleSet(x int,y int) bool
+	IsModuleSet(x int, y int) bool
 	// GetModule : x,y is module axes , not pixel axes.
-	GetModule(x int,y int) bool
+	GetModule(x int, y int) bool
 	GetImage() *image.NRGBA
 	Clone() Output
-	ResizeToFit(moduleSize int,quietZoneSize int,pixelSize int)
+	ResizeToFit(moduleSize int, quietZoneSize int, pixelSize int)
 	Save(fileName string) error
-	SaveToBase64() (string,error)
+	SaveToBase64() (string, error)
 }
-
 
 // EvalPenalty :Evaluate Penalty for QRCode.
 // param: moduleSize, not contains quiet zone size.
@@ -108,19 +106,19 @@ func (out *BaseOutput) EvalPenalty(moduleSize int) uint {
 //  SUM1 number of dark modules in right side edge
 //  SUM2 number of dark modules in lower side edge
 func (out *BaseOutput) EvalMicroQRCodePenalty(moduleSize int) uint {
-	var sum1,sum2,resultPoint uint
-	for i:=0;i<moduleSize;i++ {
-		if out.GetModule(moduleSize - 1, i){
+	var sum1, sum2, resultPoint uint
+	for i := 0; i < moduleSize; i++ {
+		if out.GetModule(moduleSize-1, i) {
 			sum1++
 		}
-		if out.GetModule(i, moduleSize - 1){
+		if out.GetModule(i, moduleSize-1) {
 			sum2++
 		}
 	}
 	if sum1 <= sum2 {
-		resultPoint = sum1 * 16 + sum2
-	}else{
-		resultPoint = sum2 * 16 + sum1
+		resultPoint = sum1*16 + sum2
+	} else {
+		resultPoint = sum2*16 + sum1
 	}
 	return resultPoint
 }
@@ -146,37 +144,36 @@ func (out *BaseOutput) evalPenaltyRule1(moduleSize int) uint {
 		var rowCheckCnt uint = 0
 		var colCheckCnt uint = 0
 		for col := 0; col < moduleSize; col++ {
-			currModule := out.GetModule(row,col)
-			if currModule == rowCheck{
+			currModule := out.GetModule(row, col)
+			if currModule == rowCheck {
 				rowCheckCnt++
-			}else{
+			} else {
 				rowCheck = !rowCheck
 				rowCheckCnt = 1
-				if rowCheckCnt >= 5{
+				if rowCheckCnt >= 5 {
 					resultPoint += 3 + (rowCheckCnt - 5)
 				}
 			}
-			if currModule == colCheck{
+			if currModule == colCheck {
 				colCheckCnt++
-			}else{
+			} else {
 				colCheck = !colCheck
 				colCheckCnt = 1
-				if colCheckCnt >= 5{
+				if colCheckCnt >= 5 {
 					resultPoint += 3 + (colCheckCnt - 5)
 				}
 			}
 		}
-		if rowCheckCnt >= 5{
+		if rowCheckCnt >= 5 {
 			resultPoint += 3 + (rowCheckCnt - 5)
 		}
-		if colCheckCnt >= 5{
+		if colCheckCnt >= 5 {
 			resultPoint += 3 + (colCheckCnt - 5)
 		}
 	}
 	//fmt.Printf("%p evalPenaltyRule1 %d\n:",out,resultPoint)
 	return resultPoint
 }
-
 
 // evalPenaltyRule2 :
 // (N1 = 3,N2 = 3,N3 = 40,N4 = 10)
@@ -214,7 +211,7 @@ func (out *BaseOutput) evalPenaltyRule3(moduleSize int) uint {
 	rightDarkPattern := []bool{false, false, false, false, true, false, true, true, true, false, true}
 	patternLen := len(leftDarkPattern)
 	var result uint
-	for x := 0; x <= moduleSize - patternLen; x++ {
+	for x := 0; x <= moduleSize-patternLen; x++ {
 		for y := 0; y < moduleSize; y++ {
 			leftDarkPatternXFound := true
 			rightDarkPatternXFound := true
@@ -238,7 +235,7 @@ func (out *BaseOutput) evalPenaltyRule3(moduleSize int) uint {
 				}
 			}
 			if leftDarkPatternXFound || rightDarkPatternXFound ||
-				leftDarkPatternYFound || rightDarkPatternYFound{
+				leftDarkPatternYFound || rightDarkPatternYFound {
 				result += 40
 			}
 		}
@@ -257,14 +254,14 @@ func (out *BaseOutput) evalPenaltyRule3(moduleSize int) uint {
 // and 55%, or 1- points if the ratio of dark module is between 40% and 60%.
 func (out *BaseOutput) evalPenaltyRule4(moduleSize int) uint {
 	darkCount := 0
-	for  row:= 0; row < moduleSize; row++ {
+	for row := 0; row < moduleSize; row++ {
 		for col := 0; col < moduleSize; col++ {
-			if out.GetModule(row,col) {
+			if out.GetModule(row, col) {
 				darkCount++
 			}
 		}
 	}
-	darkRate := float64(darkCount) / float64(moduleSize * moduleSize)  * 100
+	darkRate := float64(darkCount) / float64(moduleSize*moduleSize) * 100
 	floor := math.Abs(math.Floor(darkRate/5) - 10)
 	ceil := math.Abs(math.Ceil(darkRate/5) - 10)
 	//fmt.Printf("%p evalPenaltyRule4 floor:%f ceil:%f \n:",out,floor,ceil)
@@ -273,9 +270,9 @@ func (out *BaseOutput) evalPenaltyRule4(moduleSize int) uint {
 
 // GetRecommendSize :Get recommend size for QRCode
 // return: the array of two recommend sizes
-func (out *BaseOutput) GetRecommendSize(moduleSize int) []int{
+func (out *BaseOutput) GetRecommendSize(moduleSize int) []int {
 	pixelSizePerModule := out.Size / moduleSize
 	recSize1 := moduleSize * pixelSizePerModule
 	recSize2 := moduleSize * (pixelSizePerModule + 1)
-	return []int{recSize1,recSize2}
+	return []int{recSize1, recSize2}
 }

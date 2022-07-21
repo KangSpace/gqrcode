@@ -1,8 +1,8 @@
 package mode
 
 import (
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/util"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/util"
 	"regexp"
 )
 
@@ -20,31 +20,30 @@ type ByteMode struct {
 	*AbstractMode
 }
 
-func NewByteModeMode() *ByteMode{
+func NewByteModeMode() *ByteMode {
 	return &ByteMode{&AbstractMode{Name: cons.ByteMode}}
 }
 
-func (bm *ByteMode) DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream){
-	return bm.BuildEncodeData(qr,bm.buildDataBits)
+func (bm *ByteMode) DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream) {
+	return bm.BuildEncodeData(qr, bm.buildDataBits)
 }
 
-func (bm *ByteMode) buildDataBits(qr *QRCodeStruct,dataStream *util.DataStream) (dataBitLen int) {
+func (bm *ByteMode) buildDataBits(qr *QRCodeStruct, dataStream *util.DataStream) (dataBitLen int) {
 	inputData := qr.Data
 	groupBitsLen := 8
-	for _,char:= range []byte(inputData){
-		bit8:= int(char)
-		dataStream.AddIntBit(bit8,groupBitsLen)
+	for _, char := range []byte(inputData) {
+		bit8 := int(char)
+		dataStream.AddIntBit(bit8, groupBitsLen)
 		dataBitLen += groupBitsLen
 	}
 	return dataBitLen
 }
 
-
-func (n *ByteMode) GetMode() *AbstractMode{
+func (n *ByteMode) GetMode() *AbstractMode {
 	return n.AbstractMode
 }
 
-func(m *ByteMode) IsSupport(data string) bool{
+func (m *ByteMode) IsSupport(data string) bool {
 	match, _ := regexp.Compile(ByteRegExpType)
 	return match.MatchString(data)
 }

@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/core/logger"
-	"github.com/gqrcode/core/mode"
-	"github.com/gqrcode/core/model"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/core/logger"
+	"github.com/KangSpace/gqrcode/core/mode"
+	"github.com/KangSpace/gqrcode/core/model"
 )
 
 // NewQRCode0 :
@@ -21,9 +21,9 @@ import (
 // param quietZoneSize,the quiet zone size for qr code, if zero, then no quiet zone, value in ()
 // return: mode.QRCodeStruct
 // return: error
-func NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mode.Mode,quietZone *model.QuietZone) (qr *mode.QRCodeStruct,err error) {
+func NewQRCode0(content string, format cons.Format, ec *mode.ErrorCorrection, m mode.Mode, quietZone *model.QuietZone) (qr *mode.QRCodeStruct, err error) {
 	// panic handle
-	defer func(){
+	defer func() {
 		if rec := recover(); rec != nil {
 			switch x := rec.(type) {
 			case string:
@@ -37,44 +37,45 @@ func NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mod
 			qr = nil
 		}
 	}()
-	if format == ""{
+	if format == "" {
 		// default is QRCode Model2
 		format = cons.QrcodeModel2
 	}
 	da := &DataAnalyzer{content}
-	version ,ec,m ,err := da.analyze(format,ec,m)
+	version, ec, m, err := da.analyze(format, ec, m)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	if quietZone == nil {
 		quietZone = model.NoneQuietZone
-	}else if quietZone == model.AutoQuietZone{
+	} else if quietZone == model.AutoQuietZone {
 		quietZone = model.NewDefaultQuietZone(version)
 	}
 	///model.NewQuietZone(version)
-	return mode.NewQRCodeStruct(content, format, version,m,ec,quietZone),nil
+	return mode.NewQRCodeStruct(content, format, version, m, ec, quietZone), nil
 }
 
 // NewQRCode :Create a QRCode(Model 2).
-func NewQRCode(content string) (*mode.QRCodeStruct,error) {
-	return NewQRCode0(content,"",nil,nil,nil)
+func NewQRCode(content string) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, "", nil, nil, nil)
 }
 
 // NewQRCodeAutoQuiet :Create a QRCode(Model 2) with model.AutoQuietZone.
-func NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error) {
-	return NewQRCode0(content,"",nil,nil,model.AutoQuietZone)
+func NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, "", nil, nil, model.AutoQuietZone)
 }
 
 // NewMicroQRCode :Create a Micro QRCode.
-func NewMicroQRCode(content string) (*mode.QRCodeStruct,error) {
-	return NewQRCode0(content,cons.MicroQrcode,nil,nil,nil)
+func NewMicroQRCode(content string) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, cons.MicroQrcode, nil, nil, nil)
 }
 
 // NewMicroQRCodeAutoQuiet :Create a Micro QRCode with model.AutoQuietZone.
-func NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error) {
-	return NewQRCode0(content,cons.MicroQrcode,nil,nil,model.AutoQuietZone)
+func NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, cons.MicroQrcode, nil, nil, model.AutoQuietZone)
 }
+
 // DataAnalyzer : struct for Data Analysis handle
 type DataAnalyzer struct {
 	Data string `json:"data"`
@@ -87,33 +88,35 @@ type DataAnalyzer struct {
 // param: ec, nullable, error correction, if null, choose appropriate ErrorCorrection from H to L with full fill data.
 // param: format, nullable, QRCode Format @see model.Format , default is cons.QrcodeModel2
 // param: mode, nullable, encode mode, if null, choose appropriate encode by data type.
-func (da *DataAnalyzer) analyze(format cons.Format,ec *mode.ErrorCorrection,m mode.Mode) (*model.Version,*mode.ErrorCorrection, mode.Mode, error){
+func (da *DataAnalyzer) analyze(format cons.Format, ec *mode.ErrorCorrection, m mode.Mode) (*model.Version, *mode.ErrorCorrection, mode.Mode, error) {
 	// Choose mode
 	var err error
-	if m == nil{
-		if m,err = getMode(da.Data);err!=nil{
-			return nil,nil,nil,err
+	if m == nil {
+		if m, err = getMode(da.Data); err != nil {
+			return nil, nil, nil, err
 		}
 	}
 	dataLen := len(da.Data)
 	var version *model.Version
 	var ecLevel cons.ErrorCorrectionLevel
-	if ec != nil{
+	if ec != nil {
 		ecLevel = ec.Level
 	}
 	// Choose version and error correction level.
-	version,ecLevel = model.GetVersionByInputDataLength(format,dataLen,m.GetMode().Name,ecLevel)
+	version, ecLevel = model.GetVersionByInputDataLength(format, dataLen, m.GetMode().Name, ecLevel)
 	if ec == nil {
 		ec = mode.NewErrorCorrection(ecLevel)
 	}
-	return version,ec,m,nil
+	return version, ec, m, nil
 }
 
-func getMode(data string) (mode.Mode,error){
-	for _,mode :=range mode.SupportModes {
-		if mode.IsSupport(data){
-			return mode,nil
+// 获取支持的内容模式
+// param: data
+func getMode(data string) (mode.Mode, error) {
+	for _, mode := range mode.SupportModes {
+		if mode.IsSupport(data) {
+			return mode, nil
 		}
 	}
-	return nil,errors.New("please check the input data,can not find a valid Mode for data:"+data)
+	return nil, errors.New("please check the input data,can not find a valid Mode for data:" + data)
 }

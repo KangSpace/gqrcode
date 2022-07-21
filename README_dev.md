@@ -140,6 +140,13 @@
 7. Format and Version Information  
    Generate the format information and (where applicable) the version information and complete the symbol.
 
+## Decode procedure overview steps:
+(Page 62. Decode procedure overview)
+
+Process flow:
+![Decode Process Flow](doc/images/qr/decode_process_flow.png)
+
+1. 
 
 ## Implement Functions: 
 
@@ -173,6 +180,9 @@
 > 1. ISO IEC 18004-2015.pdf
 > 2. QR Code Specification-ISO_IEC_18004-2006.pdf
 > 3. https://www.thonky.com/qr-code-tutorial/error-correction-coding
+> 4. https://www.jianshu.com/p/36b1ed153524
+> 5. https://blog.csdn.net/hhygcy/article/details/4280165
+> 6. https://www.cnblogs.com/Imageshop/archive/2013/04/22/3036127.html
 
 
 ## Dependency Package

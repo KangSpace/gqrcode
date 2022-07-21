@@ -2,11 +2,11 @@ package mode
 
 import (
 	"errors"
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/core/logger"
-	"github.com/gqrcode/core/model"
-	"github.com/gqrcode/core/output"
-	"github.com/gqrcode/util"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/core/logger"
+	"github.com/KangSpace/gqrcode/core/model"
+	"github.com/KangSpace/gqrcode/core/output"
+	"github.com/KangSpace/gqrcode/util"
 	"strconv"
 )
 
@@ -26,7 +26,7 @@ type AbstractMode struct {
 	Name cons.ModeType `json:"name"`
 }
 
-func(m *AbstractMode) isSupport(data string) bool{
+func (m *AbstractMode) isSupport(data string) bool {
 	return false
 }
 
@@ -54,8 +54,8 @@ type unionIndicator struct {
 // modeIndicatorDetail : The ModeIndicator detail of Mode
 type modeIndicatorDetail struct {
 	Format cons.Format
-	// model.VERSION_ALL("0") for all
-	Version model.VersionId
+	// model.VersionAll("0") for all
+	Version             model.VersionId
 	ModeIndicatorLength uint8
 	// The Mode and Version not supported,if ModeIndicatorCode is null,
 	ModeIndicatorCode []util.Bit
@@ -74,134 +74,132 @@ type CountIndicatorBitsNumberDetail struct {
 // struct: []*UnionIndicator
 var unionIndicators = []*unionIndicator{
 	{cons.EciMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,1,1,1}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, nil},
-		{cons.MicroQrcode, model.VERSION_M4, 3, nil}}, nil},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 1, 1, 1}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, nil},
+		{cons.MicroQrcode, model.VersionM4, 3, nil}}, nil},
 	{cons.NumericMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,0,0,1}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, []byte{0}},
-		{cons.MicroQrcode, model.VERSION_M3, 2, []byte{0,0}},
-		{cons.MicroQrcode, model.VERSION_M4, 3, []byte{0,0,0}}},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 0, 0, 1}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, []byte{0}},
+		{cons.MicroQrcode, model.VersionM3, 2, []byte{0, 0}},
+		{cons.MicroQrcode, model.VersionM4, 3, []byte{0, 0, 0}}},
 		[]*CountIndicatorBitsNumberDetail{
-		    {[]model.VersionId{model.VERSION_M1},3},
-			{[]model.VersionId{model.VERSION_M2},4},
-			{[]model.VersionId{model.VERSION_M3},5},
-			{[]model.VersionId{model.VERSION_M4},6},
+			{[]model.VersionId{model.VersionM1}, 3},
+			{[]model.VersionId{model.VersionM2}, 4},
+			{[]model.VersionId{model.VersionM3}, 5},
+			{[]model.VersionId{model.VersionM4}, 6},
 			//VERSION_1 to VERSION_9
-			{[]model.VersionId{model.VERSION1,model.VERSION2,model.VERSION3,model.VERSION4,model.VERSION5,
-				model.VERSION6,model.VERSION7,model.VERSION8,model.VERSION9},10},
+			{[]model.VersionId{model.VERSION1, model.VERSION2, model.VERSION3, model.VERSION4, model.VERSION5,
+				model.VERSION6, model.VERSION7, model.VERSION8, model.VERSION9}, 10},
 			//VERSION_10 to VERSION_26
-			{[]model.VersionId{model.VERSION10,model.VERSION11,model.VERSION12,model.VERSION13,model.VERSION14,
-				model.VERSION15,model.VERSION16,model.VERSION17,model.VERSION18,model.VERSION19,model.VERSION20,
-				model.VERSION21,model.VERSION22,model.VERSION23,model.VERSION24,model.VERSION25,model.VERSION26},12},
+			{[]model.VersionId{model.VERSION10, model.VERSION11, model.VERSION12, model.VERSION13, model.VERSION14,
+				model.VERSION15, model.VERSION16, model.VERSION17, model.VERSION18, model.VERSION19, model.VERSION20,
+				model.VERSION21, model.VERSION22, model.VERSION23, model.VERSION24, model.VERSION25, model.VERSION26}, 12},
 			//VERSION_27 to VERSION_40
-			{[]model.VersionId{model.VERSION27,model.VERSION28,model.VERSION29,model.VERSION30,model.VERSION31,
-				model.VERSION32,model.VERSION33,model.VERSION34,model.VERSION35,model.VERSION36,model.VERSION37,
-				model.VERSION38,model.VERSION39,model.VERSION40},14}}},
+			{[]model.VersionId{model.VERSION27, model.VERSION28, model.VERSION29, model.VERSION30, model.VERSION31,
+				model.VERSION32, model.VERSION33, model.VERSION34, model.VERSION35, model.VERSION36, model.VERSION37,
+				model.VERSION38, model.VERSION39, model.VERSION40}, 14}}},
 	{cons.AlphanumericMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,0,1,0}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, []byte{1}},
-		{cons.MicroQrcode, model.VERSION_M3, 2, []byte{0,1}},
-		{cons.MicroQrcode, model.VERSION_M4, 3, []byte{0,0,1}}},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 0, 1, 0}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, []byte{1}},
+		{cons.MicroQrcode, model.VersionM3, 2, []byte{0, 1}},
+		{cons.MicroQrcode, model.VersionM4, 3, []byte{0, 0, 1}}},
 		[]*CountIndicatorBitsNumberDetail{
-			{[]model.VersionId{model.VERSION_M1},0},
-			{[]model.VersionId{model.VERSION_M2},3},
-			{[]model.VersionId{model.VERSION_M3},4},
-			{[]model.VersionId{model.VERSION_M4},5},
+			{[]model.VersionId{model.VersionM1}, 0},
+			{[]model.VersionId{model.VersionM2}, 3},
+			{[]model.VersionId{model.VersionM3}, 4},
+			{[]model.VersionId{model.VersionM4}, 5},
 			//VERSION_1 to VERSION_9
-			{[]model.VersionId{model.VERSION1,model.VERSION2,model.VERSION3,model.VERSION4,model.VERSION5,
-				model.VERSION6,model.VERSION7,model.VERSION8,model.VERSION9},9},
+			{[]model.VersionId{model.VERSION1, model.VERSION2, model.VERSION3, model.VERSION4, model.VERSION5,
+				model.VERSION6, model.VERSION7, model.VERSION8, model.VERSION9}, 9},
 			//VERSION_10 to VERSION_26
-			{[]model.VersionId{model.VERSION10,model.VERSION11,model.VERSION12,model.VERSION13,model.VERSION14,
-				model.VERSION15,model.VERSION16,model.VERSION17,model.VERSION18,model.VERSION19,model.VERSION20,
-				model.VERSION21,model.VERSION22,model.VERSION23,model.VERSION24,model.VERSION25,model.VERSION26},11},
+			{[]model.VersionId{model.VERSION10, model.VERSION11, model.VERSION12, model.VERSION13, model.VERSION14,
+				model.VERSION15, model.VERSION16, model.VERSION17, model.VERSION18, model.VERSION19, model.VERSION20,
+				model.VERSION21, model.VERSION22, model.VERSION23, model.VERSION24, model.VERSION25, model.VERSION26}, 11},
 			//VERSION_27 to VERSION_40
-			{[]model.VersionId{model.VERSION27,model.VERSION28,model.VERSION29,model.VERSION30,model.VERSION31,
-				model.VERSION32,model.VERSION33,model.VERSION34,model.VERSION35,model.VERSION36,model.VERSION37,
-				model.VERSION38,model.VERSION39,model.VERSION40},13}}},
+			{[]model.VersionId{model.VERSION27, model.VERSION28, model.VERSION29, model.VERSION30, model.VERSION31,
+				model.VERSION32, model.VERSION33, model.VERSION34, model.VERSION35, model.VERSION36, model.VERSION37,
+				model.VERSION38, model.VERSION39, model.VERSION40}, 13}}},
 	{cons.ByteMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,1,0,0}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, []byte{1,0}},
-		{cons.MicroQrcode, model.VERSION_M4, 3, []byte{0,1,0}}},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 1, 0, 0}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, []byte{1, 0}},
+		{cons.MicroQrcode, model.VersionM4, 3, []byte{0, 1, 0}}},
 		[]*CountIndicatorBitsNumberDetail{
-			{[]model.VersionId{model.VERSION_M1},0},
-			{[]model.VersionId{model.VERSION_M2},0},
-			{[]model.VersionId{model.VERSION_M3},4},
-			{[]model.VersionId{model.VERSION_M4},5},
+			{[]model.VersionId{model.VersionM1}, 0},
+			{[]model.VersionId{model.VersionM2}, 0},
+			{[]model.VersionId{model.VersionM3}, 4},
+			{[]model.VersionId{model.VersionM4}, 5},
 			//VERSION_1 to VERSION_9
-			{[]model.VersionId{model.VERSION1,model.VERSION2,model.VERSION3,model.VERSION4,model.VERSION5,
-				model.VERSION6,model.VERSION7,model.VERSION8,model.VERSION9},8},
+			{[]model.VersionId{model.VERSION1, model.VERSION2, model.VERSION3, model.VERSION4, model.VERSION5,
+				model.VERSION6, model.VERSION7, model.VERSION8, model.VERSION9}, 8},
 			//VERSION_10 to VERSION_26
-			{[]model.VersionId{model.VERSION10,model.VERSION11,model.VERSION12,model.VERSION13,model.VERSION14,
-				model.VERSION15,model.VERSION16,model.VERSION17,model.VERSION18,model.VERSION19,model.VERSION20,
-				model.VERSION21,model.VERSION22,model.VERSION23,model.VERSION24,model.VERSION25,model.VERSION26},16},
+			{[]model.VersionId{model.VERSION10, model.VERSION11, model.VERSION12, model.VERSION13, model.VERSION14,
+				model.VERSION15, model.VERSION16, model.VERSION17, model.VERSION18, model.VERSION19, model.VERSION20,
+				model.VERSION21, model.VERSION22, model.VERSION23, model.VERSION24, model.VERSION25, model.VERSION26}, 16},
 			//VERSION_27 to VERSION_40
-			{[]model.VersionId{model.VERSION27,model.VERSION28,model.VERSION29,model.VERSION30,model.VERSION31,
-				model.VERSION32,model.VERSION33,model.VERSION34,model.VERSION35,model.VERSION36,model.VERSION37,
-				model.VERSION38,model.VERSION39,model.VERSION40},16}}},
+			{[]model.VersionId{model.VERSION27, model.VERSION28, model.VERSION29, model.VERSION30, model.VERSION31,
+				model.VERSION32, model.VERSION33, model.VERSION34, model.VERSION35, model.VERSION36, model.VERSION37,
+				model.VERSION38, model.VERSION39, model.VERSION40}, 16}}},
 	{cons.KanjiMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{1,0,0,0}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, []byte{1,1}},
-		{cons.MicroQrcode, model.VERSION_M4, 3, []byte{0,1,1}}},
+		{cons.QRCODE, model.VersionAll, 4, []byte{1, 0, 0, 0}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, []byte{1, 1}},
+		{cons.MicroQrcode, model.VersionM4, 3, []byte{0, 1, 1}}},
 		[]*CountIndicatorBitsNumberDetail{
-			{[]model.VersionId{model.VERSION_M1},0},
-			{[]model.VersionId{model.VERSION_M2},0},
-			{[]model.VersionId{model.VERSION_M3},3},
-			{[]model.VersionId{model.VERSION_M4},4},
-			{[]model.VersionId{model.VERSION1,model.VERSION2,model.VERSION3,model.VERSION4,model.VERSION5,
-				model.VERSION6,model.VERSION7,model.VERSION8,model.VERSION9},8},
+			{[]model.VersionId{model.VersionM1}, 0},
+			{[]model.VersionId{model.VersionM2}, 0},
+			{[]model.VersionId{model.VersionM3}, 3},
+			{[]model.VersionId{model.VersionM4}, 4},
+			{[]model.VersionId{model.VERSION1, model.VERSION2, model.VERSION3, model.VERSION4, model.VERSION5,
+				model.VERSION6, model.VERSION7, model.VERSION8, model.VERSION9}, 8},
 			//VERSION_10 to VERSION_26
-			{[]model.VersionId{model.VERSION10,model.VERSION11,model.VERSION12,model.VERSION13,model.VERSION14,
-				model.VERSION15,model.VERSION16,model.VERSION17,model.VERSION18,model.VERSION19,model.VERSION20,
-				model.VERSION21,model.VERSION22,model.VERSION23,model.VERSION24,model.VERSION25,model.VERSION26},10},
+			{[]model.VersionId{model.VERSION10, model.VERSION11, model.VERSION12, model.VERSION13, model.VERSION14,
+				model.VERSION15, model.VERSION16, model.VERSION17, model.VERSION18, model.VERSION19, model.VERSION20,
+				model.VERSION21, model.VERSION22, model.VERSION23, model.VERSION24, model.VERSION25, model.VERSION26}, 10},
 			//VERSION_27 to VERSION_40
-			{[]model.VersionId{model.VERSION27,model.VERSION28,model.VERSION29,model.VERSION30,model.VERSION31,
-				model.VERSION32,model.VERSION33,model.VERSION34,model.VERSION35,model.VERSION36,model.VERSION37,
-				model.VERSION38,model.VERSION39,model.VERSION40},12}}},
+			{[]model.VersionId{model.VERSION27, model.VERSION28, model.VERSION29, model.VERSION30, model.VERSION31,
+				model.VERSION32, model.VERSION33, model.VERSION34, model.VERSION35, model.VERSION36, model.VERSION37,
+				model.VERSION38, model.VERSION39, model.VERSION40}, 12}}},
 	{cons.StructuredAppendMode, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,0,1,1}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, nil},
-		{cons.MicroQrcode, model.VERSION_M4, 3, nil}}, nil},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 0, 1, 1}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, nil},
+		{cons.MicroQrcode, model.VersionM4, 3, nil}}, nil},
 	{cons.Fnc1ModeP1, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{0,1,0,1}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, nil},
-		{cons.MicroQrcode, model.VERSION_M4, 3, nil}}, nil},
+		{cons.QRCODE, model.VersionAll, 4, []byte{0, 1, 0, 1}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, nil},
+		{cons.MicroQrcode, model.VersionM4, 3, nil}}, nil},
 	{cons.Fnc1ModeP2, []*modeIndicatorDetail{
-		{cons.QRCODE, model.VERSION_ALL, 4, []byte{1,0,0,1,}},
-		{cons.MicroQrcode, model.VERSION_M1, 0, nil},
-		{cons.MicroQrcode, model.VERSION_M2, 1, nil},
-		{cons.MicroQrcode, model.VERSION_M3, 2, nil},
-		{cons.MicroQrcode, model.VERSION_M4, 3, nil}}, nil},
+		{cons.QRCODE, model.VersionAll, 4, []byte{1, 0, 0, 1}},
+		{cons.MicroQrcode, model.VersionM1, 0, nil},
+		{cons.MicroQrcode, model.VersionM2, 1, nil},
+		{cons.MicroQrcode, model.VersionM3, 2, nil},
+		{cons.MicroQrcode, model.VersionM4, 3, nil}}, nil},
 }
 
-
-func (m *AbstractMode) BuildEncodeData(qr *QRCodeStruct, buildDataBits func(qr *QRCodeStruct,dataStream *util.DataStream) (dataBitLen int)) (dataStream *util.DataStream){
+func (m *AbstractMode) BuildEncodeData(qr *QRCodeStruct, buildDataBits func(qr *QRCodeStruct, dataStream *util.DataStream) (dataBitLen int)) (dataStream *util.DataStream) {
 	dataStream = util.NewDataStream(16)
 	// Mode indicator bits
-	m.buildModeIndicator(qr,dataStream)
+	m.buildModeIndicator(qr, dataStream)
 	// Data character count indicator bits
-	_,_,numberOfDataBits := m.buildCharacterCountIndicator(qr,dataStream)
+	_, _, numberOfDataBits := m.buildCharacterCountIndicator(qr, dataStream)
 	// Data bits: implement by various modes
-	buildDataBits(qr,dataStream)
+	buildDataBits(qr, dataStream)
 
 	terminatorBitsLen := numberOfDataBits - dataStream.GetCount()
 	// add Terminator
-	m.buildTerminators(qr,dataStream,terminatorBitsLen)
+	m.buildTerminators(qr, dataStream, terminatorBitsLen)
 	return dataStream
 }
-
 
 // GetModeIndicator :Get Mode Indicator by Iterate ModeIndicators with Mode and Version
 func (m *AbstractMode) GetModeIndicator(qr *QRCodeStruct) *modeIndicatorDetail {
@@ -209,12 +207,12 @@ func (m *AbstractMode) GetModeIndicator(qr *QRCodeStruct) *modeIndicatorDetail {
 	version := qr.Version.Id
 	if !qr.Version.IsMicroQRCode() {
 		// for VERSION_ALL
-		version = model.VERSION_ALL
+		version = model.VersionAll
 	}
 	for _, unionIndicator := range unionIndicators {
-		if mode == unionIndicator.Mode{
+		if mode == unionIndicator.Mode {
 			for _, detail := range unionIndicator.modeIndicatorDetails {
-				if version == detail.Version{
+				if version == detail.Version {
 					return detail
 				}
 			}
@@ -227,27 +225,27 @@ func (m *AbstractMode) GetModeIndicator(qr *QRCodeStruct) *modeIndicatorDetail {
 // return: numberOfCountIndicatorBits.
 // return: numberOfDataBits,  the max count of the data bits(mode indicator bits + character count indicator bits + data bits).
 // return: modeDataCapacity,  the max count of the version data capacity.
-func (m *AbstractMode) GetCharacterCountIndicatorBitsNumber(qr *QRCodeStruct) (numberOfCountIndicatorBits int,modeDataCapacity int,numberOfDataBits int) {
+func (m *AbstractMode) GetCharacterCountIndicatorBitsNumber(qr *QRCodeStruct) (numberOfCountIndicatorBits int, modeDataCapacity int, numberOfDataBits int) {
 	mode := m.Name
 	version := qr.Version
 	versionId := version.Id
 	ec := qr.ErrorCorrection
 	for _, unionIndicator := range unionIndicators {
-		if mode == unionIndicator.Mode{
+		if mode == unionIndicator.Mode {
 			for _, detail := range unionIndicator.CountIndicatorBitsNumDetails {
-				if util.IntIn(versionId,detail.Versions) {
-					versionDataCapacity :=version.GetVersionSymbolCharsAndInputDataCapacity(ec.Level)
+				if util.IntIn(versionId, detail.Versions) {
+					versionDataCapacity := version.GetVersionSymbolCharsAndInputDataCapacity(ec.Level)
 					modeDataCapacity := versionDataCapacity.DataCapacity[mode]
-					return detail.NumberOfBits,modeDataCapacity,versionDataCapacity.NumberOfDataBits
+					return detail.NumberOfBits, modeDataCapacity, versionDataCapacity.NumberOfDataBits
 				}
 			}
 		}
 	}
-	return 0,0,0
+	return 0, 0, 0
 }
 
 // Get Mode Indicator bits
-func (m *AbstractMode) buildModeIndicator(qr *QRCodeStruct,data *util.DataStream) (modeIndicatorBitLen int){
+func (m *AbstractMode) buildModeIndicator(qr *QRCodeStruct, data *util.DataStream) (modeIndicatorBitLen int) {
 	indicator := m.GetModeIndicator(qr)
 	modeIndicatorBitLen = int(indicator.ModeIndicatorLength)
 	//data := util.NewDataStream(int(length))
@@ -257,37 +255,35 @@ func (m *AbstractMode) buildModeIndicator(qr *QRCodeStruct,data *util.DataStream
 }
 
 // Get Data character count indicator bits
-func (m *AbstractMode) buildCharacterCountIndicator(qr *QRCodeStruct,dataStream *util.DataStream) (countIndicatorBitLen, maxDataCapacity int,numberOfDataBits int){
-	numberOfBits, modeDataCapacity,numberOfDataBits := m.GetCharacterCountIndicatorBitsNumber(qr)
+func (m *AbstractMode) buildCharacterCountIndicator(qr *QRCodeStruct, dataStream *util.DataStream) (countIndicatorBitLen, maxDataCapacity int, numberOfDataBits int) {
+	numberOfBits, modeDataCapacity, numberOfDataBits := m.GetCharacterCountIndicatorBitsNumber(qr)
 	dataLength := len(qr.Data)
 	maxDataCapacity = modeDataCapacity
 	if dataLength > modeDataCapacity {
 		dataLength = modeDataCapacity
 		qr.Data = qr.Data[:dataLength]
-		logger.Warn("buildCharacterCountIndicator: Data length is too long, it will be trim to max count by rule \"Table3 - Number of bits in character count indicator for QR Code\", max count is :"+strconv.Itoa( modeDataCapacity))
+		logger.Warn("buildCharacterCountIndicator: Data length is too long, it will be trim to max count by rule \"Table3 - Number of bits in character count indicator for QR Code\", max count is :" + strconv.Itoa(modeDataCapacity))
 	}
 	//data = util.NewDataStream(numberOfBits)
-	dataStream.AddIntBit(dataLength,numberOfBits)
-	return numberOfBits,maxDataCapacity,numberOfDataBits
+	dataStream.AddIntBit(dataLength, numberOfBits)
+	return numberOfBits, maxDataCapacity, numberOfDataBits
 }
 
 // buildTerminators :build Terminator bits by rules
-func (m *AbstractMode) buildTerminators(qr *QRCodeStruct,dataStream *util.DataStream,fillBitsLen int)( terminatorLen int){
-	if fillBitsLen >0 {
+func (m *AbstractMode) buildTerminators(qr *QRCodeStruct, dataStream *util.DataStream, fillBitsLen int) (terminatorLen int) {
+	if fillBitsLen > 0 {
 		terminatorBits := m.GetTerminalBits(qr.Version)
 		terminatorLen = len(terminatorBits)
-		dataStream.AddBit(terminatorBits,terminatorLen)
+		dataStream.AddBit(terminatorBits, terminatorLen)
 	}
 	return terminatorLen
 }
 
-
 // BuildFinalErrorCorrectionCodewords : build the error correction codewords
-func (m *AbstractMode) BuildFinalErrorCorrectionCodewords(qr *QRCodeStruct,dataStream *util.DataStream) []util.Bit{
-	ecBlockList := m.ConvertDataBitsToECBlocks(qr,dataStream)
-	return m.InterleaveECBlocks(qr,ecBlockList)
+func (m *AbstractMode) BuildFinalErrorCorrectionCodewords(qr *QRCodeStruct, dataStream *util.DataStream) []util.Bit {
+	ecBlockList := m.ConvertDataBitsToECBlocks(qr, dataStream)
+	return m.InterleaveECBlocks(qr, ecBlockList)
 }
-
 
 // calculatePixelSizePerModule :calculate pixel size for per module, default is cons.DefaultPixelSizePerModule.
 // Generate as clear an image as possible, avoid resize.
@@ -295,11 +291,11 @@ func (m *AbstractMode) BuildFinalErrorCorrectionCodewords(qr *QRCodeStruct,dataS
 // return: pixelSize, pixel size for per module.
 // return: resize, need or not resize the image.
 // return: quietZonePixels, quiet zone pixels for width/height
-func calculatePixelSizePerModule(imageSize int,moduleSize int,quietZoneSize int) (pixelSize int){
+func calculatePixelSizePerModule(imageSize int, moduleSize int, quietZoneSize int) (pixelSize int) {
 	// Calculate the max pixelSize for per module of QRCode.
 	pixelSize = cons.DefaultPixelSizePerModule
 	// image auto
-	if imageSize == output.AUTO_SIZE{
+	if imageSize == output.AUTO_SIZE {
 		// finalImageSize = (moduleSize + quietZoneSize * 2) * pixelSize
 		// image size is already init in Output.Init()
 		return pixelSize
@@ -307,8 +303,8 @@ func calculatePixelSizePerModule(imageSize int,moduleSize int,quietZoneSize int)
 	totalModuleSize := moduleSize + quietZoneSize
 	pixelSize = imageSize / totalModuleSize
 	// Image size can not full the qrcode by single-pixel size
-	if pixelSize < 1{
-		panic(errors.New("image size:"+ strconv.Itoa(imageSize)+" can not accommodate an effective qrcode"))
+	if pixelSize < 1 {
+		panic(errors.New("image size:" + strconv.Itoa(imageSize) + " can not accommodate an effective qrcode"))
 	}
 	return pixelSize
 }
@@ -317,9 +313,9 @@ func calculatePixelSizePerModule(imageSize int,moduleSize int,quietZoneSize int)
 // param: maskCount, the mask count number(QRCode: 8,Micro QRCode: 4).
 // param: from, 0 by param "from",and 1-7 by from.Clone() take.
 func newQRCodeMaskOutputGroup(maskCount int, from output.Output) []output.Output {
-	outputs := make([]output.Output,maskCount)
+	outputs := make([]output.Output, maskCount)
 	outputs[0] = from
-	for i:=1; i<maskCount;i++{
+	for i := 1; i < maskCount; i++ {
 		outputs[i] = from.Clone()
 	}
 	return outputs
@@ -328,18 +324,18 @@ func newQRCodeMaskOutputGroup(maskCount int, from output.Output) []output.Output
 // selectRightPenaltyMaskOut :
 // 1. QRCode: Evaluate mask penalty for mask (0-7 for QRCode) and select the pattern with the lowest penalty points score.
 // 2. Micro QRCode: Evaluate mask penalty for mask (0-3 for Micro QRCode) and select the pattern with the highest score.
-func selectRightPenaltyMaskOut(qr *QRCodeStruct,outs []output.Output,moduleSize int) (out output.Output,mask int){
-	if qr.IsMicroQRCode(){
-		return selectHighestScoreMaskOut(outs,moduleSize)
+func selectRightPenaltyMaskOut(qr *QRCodeStruct, outs []output.Output, moduleSize int) (out output.Output, mask int) {
+	if qr.IsMicroQRCode() {
+		return selectHighestScoreMaskOut(outs, moduleSize)
 	}
-	return selectLowestPenaltyMaskOut(outs,moduleSize)
+	return selectLowestPenaltyMaskOut(outs, moduleSize)
 }
 
 // selectLowestPenaltyMaskOut :For QRCode
 func selectLowestPenaltyMaskOut(outs []output.Output, moduleSize int) (out output.Output, mask int) {
 	penalty := ^uint(0)
 	var penaltyOut output.Output = nil
-	for i,out_ := range outs{
+	for i, out_ := range outs {
 		var tempPenalty uint
 		tempPenalty = out_.GetBaseOutput().EvalPenalty(moduleSize)
 		if tempPenalty < penalty {
@@ -348,14 +344,14 @@ func selectLowestPenaltyMaskOut(outs []output.Output, moduleSize int) (out outpu
 			mask = i
 		}
 	}
-	return penaltyOut,mask
+	return penaltyOut, mask
 }
 
 // selectHighestScoreMaskOut :For Micro QRCode
 func selectHighestScoreMaskOut(outs []output.Output, moduleSize int) (out output.Output, mask int) {
 	penalty := uint(0)
 	var penaltyOut output.Output = nil
-	for i,out_ := range outs{
+	for i, out_ := range outs {
 		var tempPenalty uint
 		tempPenalty = out_.GetBaseOutput().EvalMicroQRCodePenalty(moduleSize)
 		if tempPenalty > penalty {
@@ -364,51 +360,51 @@ func selectHighestScoreMaskOut(outs []output.Output, moduleSize int) (out output
 			mask = i
 		}
 	}
-	return penaltyOut,mask
+	return penaltyOut, mask
 }
 
 // BuildModuleInMatrix : Page 54,7.7 Codeword placement in matrix
 // Place the codeword modules in the matrix together with the finder pattern,separators,timing pattern,and (if required) alignment patterns.
-func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util.Bit,out output.Output) output.Output{
+func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct, codewordsBits []util.Bit, out output.Output) output.Output {
 	version := qr.Version
 	imageSize := out.GetBaseOutput().Size
 	moduleSize := version.GetModuleSize()
 	quietZoneSize := qr.QuietZone.GetQuietZoneSize()
-	pixelSize := calculatePixelSizePerModule(imageSize,moduleSize,quietZoneSize)
-	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(),out)
+	pixelSize := calculatePixelSizePerModule(imageSize, moduleSize, quietZoneSize)
+	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(), out)
 
 	// output group with mask for common
-	outputGroupOutMask := func(x int,y int ,val bool,hasMask bool) {
+	outputGroupOutMask := func(x int, y int, val bool, hasMask bool) {
 		srcVal := val
-		for i,out_ :=range maskOutputGroup{
+		for i, out_ := range maskOutputGroup {
 			newVal := srcVal
-			if hasMask{
-				if version.Id >0 {
+			if hasMask {
+				if version.Id > 0 {
 					newVal = getQRCodeMaskVal(x, y, srcVal, i)
-				}else{
+				} else {
 					newVal = getMircoQRCodeMaskVal(x, y, srcVal, i)
 				}
 			}
-			out_.WriteModule(x,y,newVal,pixelSize)
+			out_.WriteModule(x, y, newVal, pixelSize)
 		}
 	}
 	// output group no mask for common
-	outputGroupOut := func(x int,y int ,val bool) {
-		outputGroupOutMask(x,y,val,false)
+	outputGroupOut := func(x int, y int, val bool) {
+		outputGroupOutMask(x, y, val, false)
 	}
 	// output group with mask for format info
-	outputGroupFormatMaskOut := func(x int,y int ,maskBits map[int][]util.Bit,maskBitIdx int) {
-		for i,out_ :=range maskOutputGroup{
-			out_.WriteModule(x,y,maskBits[i][maskBitIdx] == 1,pixelSize)
+	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int) {
+		for i, out_ := range maskOutputGroup {
+			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize)
 		}
 	}
 
 	// draw finder pattern and separators
 	drawFinderPatternAndSeparator(version, outputGroupOut)
 	// draw alignment pattern,version 2 or larger must contain alignment pattern.
-	drawAlignmentPattern(qr.Version,qr.AlignmentPattern, outputGroupOut)
+	drawAlignmentPattern(qr.Version, qr.AlignmentPattern, outputGroupOut)
 	// draw timing pattern
-	drawTimingPattern(qr.TimingPattern,moduleSize, outputGroupOut)
+	drawTimingPattern(qr.TimingPattern, moduleSize, outputGroupOut)
 	// draw Dark Block for QRCode
 	drawDarkBlock(version.Id, outputGroupOut)
 	// draw version information for version 7+
@@ -416,52 +412,52 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct,codewordsBits []util
 	// format zone axes for QRCode module2
 	drawFormatInformation(qr, outputGroupFormatMaskOut)
 	// draw data
-	drawData(version,moduleSize, codewordsBits, out, outputGroupOutMask)
+	drawData(version, moduleSize, codewordsBits, out, outputGroupOutMask)
 
 	// evaluate mask penalty for mask 0-7 or 0-3
-	lowestPenaltyOut,mask := selectRightPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
+	lowestPenaltyOut, mask := selectRightPenaltyMaskOut(qr, maskOutputGroup, moduleSize)
 	qr.SetMask(mask)
-	if out != lowestPenaltyOut{
+	if out != lowestPenaltyOut {
 		out = lowestPenaltyOut
 	}
 	// draw with quiet zone
-	out.ResizeToFit(moduleSize,quietZoneSize,pixelSize)
+	out.ResizeToFit(moduleSize, quietZoneSize, pixelSize)
 	return out
 }
 
 // BuildModuleInMatrixMicroQRCode :
 // Deprecated
-func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct,codewordsBits []util.Bit,out output.Output) output.Output{
+func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct, codewordsBits []util.Bit, out output.Output) output.Output {
 	version := qr.Version
 	imageSize := out.GetBaseOutput().Size
 	moduleSize := version.GetModuleSize()
 	quietZoneSize := qr.QuietZone.GetQuietZoneSize()
-	pixelSize := calculatePixelSizePerModule(imageSize,moduleSize,quietZoneSize)
-	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(),out)
+	pixelSize := calculatePixelSizePerModule(imageSize, moduleSize, quietZoneSize)
+	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(), out)
 
 	// output group with mask for common
-	outputGroupOutMask := func(x int,y int ,val bool,hasMask bool) {
+	outputGroupOutMask := func(x int, y int, val bool, hasMask bool) {
 		srcVal := val
-		for i,out_ :=range maskOutputGroup{
+		for i, out_ := range maskOutputGroup {
 			newVal := srcVal
-			if hasMask{
-				if version.Id >0 {
+			if hasMask {
+				if version.Id > 0 {
 					newVal = getQRCodeMaskVal(x, y, srcVal, i)
-				}else{
+				} else {
 					newVal = getMircoQRCodeMaskVal(x, y, srcVal, i)
 				}
 			}
-			out_.WriteModule(x,y,newVal,pixelSize)
+			out_.WriteModule(x, y, newVal, pixelSize)
 		}
 	}
 	// output group no mask for common
-	outputGroupOut := func(x int,y int ,val bool) {
-		outputGroupOutMask(x,y,val,false)
+	outputGroupOut := func(x int, y int, val bool) {
+		outputGroupOutMask(x, y, val, false)
 	}
 	// output group with mask for format info
-	outputGroupFormatMaskOut := func(x int,y int ,maskBits map[int][]util.Bit,maskBitIdx int) {
-		for i,out_ :=range maskOutputGroup{
-			out_.WriteModule(x,y,maskBits[i][maskBitIdx] == 1,pixelSize)
+	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int) {
+		for i, out_ := range maskOutputGroup {
+			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize)
 		}
 	}
 
@@ -472,24 +468,24 @@ func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct,codewords
 	// format zone axes for QRCode module2
 	drawFormatInformation(qr, outputGroupFormatMaskOut)
 	// draw data
-	drawData(version,moduleSize, codewordsBits, out, outputGroupOutMask)
+	drawData(version, moduleSize, codewordsBits, out, outputGroupOutMask)
 
-	lowestPenaltyOut,mask := selectRightPenaltyMaskOut(qr,maskOutputGroup,moduleSize)
+	lowestPenaltyOut, mask := selectRightPenaltyMaskOut(qr, maskOutputGroup, moduleSize)
 	qr.SetMask(mask)
-	if out != lowestPenaltyOut{
+	if out != lowestPenaltyOut {
 		out = lowestPenaltyOut
 	}
 	// draw with quiet zone
-	out.ResizeToFit(moduleSize,quietZoneSize,pixelSize)
+	out.ResizeToFit(moduleSize, quietZoneSize, pixelSize)
 	return out
 }
 
 func drawDarkBlock(version model.VersionId, outputGroupOut func(x int, y int, val bool)) {
 	// Dark Block: All QR codes have a dark module beside the bottom left finder pattern. More specifically,
 	// the dark module is always located at the coordinate ([(4 * V) + 9], 8) where V is the version of the QR code.
-	if version > 0{
+	if version > 0 {
 		//out.WriteModule(model.FINDER_PATTERN_MODULE_SIZE + 1, 4 * version + 9,true,pixelSize)
-		outputGroupOut(model.FINDER_PATTERN_MODULE_SIZE + 1, 4 * version + 9,true)
+		outputGroupOut(model.FINDER_PATTERN_MODULE_SIZE+1, 4*version+9, true)
 	}
 }
 
@@ -504,34 +500,34 @@ func drawFinderPatternAndSeparator(version *model.Version, outputGroupOut func(x
 	fpModules := finderPatterns.GetModules()
 	separatorLen := model.FINDER_PATTERN_MODULE_SIZE + 1
 
-	for _,pos :=range finderPatterns.Positions{
-		for row,bits:= range fpModules {
-			for col,bit:= range bits {
+	for _, pos := range finderPatterns.Positions {
+		for row, bits := range fpModules {
+			for col, bit := range bits {
 				//out.WriteModule(pos.Axes.X+row, pos.Axes.Y + col,bit == 1,pixelSize)
-				outputGroupOut(pos.Axes.X+row, pos.Axes.Y + col,bit == 1)
+				outputGroupOut(pos.Axes.X+row, pos.Axes.Y+col, bit == 1)
 			}
 		}
 		// draw separators
-		for lop :=0; lop < separatorLen; lop++{
+		for lop := 0; lop < separatorLen; lop++ {
 			separatorHX := pos.Axes.X
 			separatorHY := pos.Axes.Y + model.FINDER_PATTERN_MODULE_SIZE
 			separatorVX := pos.Axes.X + model.FINDER_PATTERN_MODULE_SIZE
 			separatorVY := pos.Axes.Y
-			if pos.Position == model.TOP_RIGHT{
+			if pos.Position == model.TOP_RIGHT {
 				separatorHX = pos.Axes.X - 1
 				separatorVX = pos.Axes.X - 1
 			}
-			if pos.Position == model.BOTTOM_LEFT{
+			if pos.Position == model.BOTTOM_LEFT {
 				separatorHY = pos.Axes.Y - 1
 				// TOP_LEFT by (0,0) is ok, need handle TOP_RIGHT,BOTTOM_LEFT draw
 				separatorVY = pos.Axes.Y - 1
 			}
 			// draw horizontal separators
 			//out.WriteModule(separatorHX + lop,separatorHY ,false,pixelSize)
-			outputGroupOut(separatorHX + lop,separatorHY ,false)
+			outputGroupOut(separatorHX+lop, separatorHY, false)
 			// draw vertical separators
 			//out.WriteModule(separatorVX ,separatorVY + lop,false,pixelSize)
-			outputGroupOut(separatorVX ,separatorVY + lop,false)
+			outputGroupOut(separatorVX, separatorVY+lop, false)
 		}
 	}
 }
@@ -542,13 +538,13 @@ func drawAlignmentPattern(version *model.Version, pattern *model.AlignmentPatter
 		return
 	}
 	apModules := pattern.GetModules()
-	for _,pos :=range pattern.Positions{
-		for row,bits:= range apModules {
-			for col,bit:= range bits {
+	for _, pos := range pattern.Positions {
+		for row, bits := range apModules {
+			for col, bit := range bits {
 				// pos is alignment center point axes,need transform to left_top point axes.
 				//out.WriteModule(quietZoneSize + pos.X - 2 + row,quietZoneSize + pos.Y - 2+col,bit == 1,pixelSize)
 				//out.WriteModule(pos.X - 2 + row, pos.Y - 2 + col,bit == 1,pixelSize)
-				outputGroupOut(pos.X - 2 + row, pos.Y - 2 + col,bit == 1)
+				outputGroupOut(pos.X-2+row, pos.Y-2+col, bit == 1)
 			}
 		}
 	}
@@ -568,11 +564,11 @@ func drawTimingPattern(timingPattern *model.TimingPattern, moduleSize int, outpu
 	h := timingPattern.H
 	w := timingPattern.W
 	loopLen := h.To.X - h.From.X
-	for i:=0; i< loopLen; i++{
+	for i := 0; i < loopLen; i++ {
 		// draw horizontal timing pattern
-		outputGroupOut(h.From.X + i , h.From.Y, i%2 == 0)
+		outputGroupOut(h.From.X+i, h.From.Y, i%2 == 0)
 		// draw vertical timing pattern
-		outputGroupOut(w.From.X , w.From.Y + i, i%2 == 0)
+		outputGroupOut(w.From.X, w.From.Y+i, i%2 == 0)
 	}
 }
 
@@ -583,39 +579,39 @@ func drawFormatInformation(qr *QRCodeStruct, outputGroupMaskOut func(x int, y in
 	moduleSize := qr.Version.GetModuleSize()
 	version := qr.Version.Id
 	level := qr.ErrorCorrection.Level
-	if qr.IsMicroQRCode(){
-		drawMicroQRCodeFormatInformation(version,level,moduleSize,outputGroupMaskOut)
-	}else{
-		drawQRCodeFormatInformation(level,moduleSize,outputGroupMaskOut)
+	if qr.IsMicroQRCode() {
+		drawMicroQRCodeFormatInformation(version, level, moduleSize, outputGroupMaskOut)
+	} else {
+		drawQRCodeFormatInformation(level, moduleSize, outputGroupMaskOut)
 	}
 }
 
 // Draw QRCode format information
-func drawQRCodeFormatInformation(level int,moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
+func drawQRCodeFormatInformation(level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
 	formatInfoBits := cons.FormatInformationBitsMap[level]
-	for i:=0; i<15;i++ {
+	for i := 0; i < 15; i++ {
 		// 0 - 6
 		if i < 7 {
-			x:= i
+			x := i
 			if i >= 6 {
-				x ++
+				x++
 			}
 			//out.WriteModule(x, 8 , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(x, 8 , formatInfoBits,i)
-			if i <= 6{
+			outputGroupMaskOut(x, 8, formatInfoBits, i)
+			if i <= 6 {
 				//out.WriteModule(8, moduleSize - i - 1, formatInfoBits[i] == 1 ,pixelSize)
-				outputGroupMaskOut(8, moduleSize - i - 1, formatInfoBits,i)
+				outputGroupMaskOut(8, moduleSize-i-1, formatInfoBits, i)
 			}
-		}else{
+		} else {
 			// 7-14
 			//out.WriteModule(moduleSize - (15 - i), 8 , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(moduleSize - (15 - i), 8 , formatInfoBits,i)
+			outputGroupMaskOut(moduleSize-(15-i), 8, formatInfoBits, i)
 			y := 15 - i
 			if y <= 6 {
 				y--
 			}
 			//out.WriteModule(8, y , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(8, y , formatInfoBits,i)
+			outputGroupMaskOut(8, y, formatInfoBits, i)
 		}
 	}
 }
@@ -625,15 +621,15 @@ func drawQRCodeFormatInformation(level int,moduleSize int, outputGroupMaskOut fu
 // The format information is a 15-bit sequence contaning 5 data bits,with 10 error correction bits calculated using the
 //  (15,5) BCH code. The first three data bits contain the symbol number(in binary). which identifies the version
 //   and error correction level, as shown in Table 13.
-func drawMicroQRCodeFormatInformation(version model.VersionId,level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
+func drawMicroQRCodeFormatInformation(version model.VersionId, level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
 	var formatInfoBits = cons.MicroQRCodeFormatInformationBitsMap[version][level]
-	for i:=0; i<15;i++ {
+	for i := 0; i < 15; i++ {
 		if i < 8 {
 			// h: 14 - 7
-			outputGroupMaskOut(1 + i, model.FINDER_PATTERN_MODULE_SIZE + 1 , formatInfoBits,i)
-		}else{
+			outputGroupMaskOut(1+i, model.FINDER_PATTERN_MODULE_SIZE+1, formatInfoBits, i)
+		} else {
 			// w:  0 - 6
-			outputGroupMaskOut(model.FINDER_PATTERN_MODULE_SIZE + 1, 15 - i, formatInfoBits, i)
+			outputGroupMaskOut(model.FINDER_PATTERN_MODULE_SIZE+1, 15-i, formatInfoBits, i)
 		}
 	}
 }
@@ -658,35 +654,35 @@ func drawMicroQRCodeFormatInformation(version model.VersionId,level int, moduleS
 // 15 16 17
 func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, val bool)) {
 	version := qr.Version.Id
-	if version < 7{
+	if version < 7 {
 		return
 	}
 	moduleSize := qr.Version.GetModuleSize()
 	versionInfoBits := cons.VersionInformationBitsMap[version]
-	for row:=0; row< 3; row++ {
-		for col:=0; col< 6; col++ {
+	for row := 0; row < 3; row++ {
+		for col := 0; col < 6; col++ {
 			// bottom_left
 			//out.WriteModule(col, moduleSize - 8 - 3 + row , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(col, moduleSize - 8 - 3 + row , versionInfoBits[ cons.VersionInformationBitsLen - 1 - (col * 3 + row)] == 1 )
+			outputGroupOut(col, moduleSize-8-3+row, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1)
 			// top_right
 			//out.WriteModule(moduleSize - 8 - 3 + row, col , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(moduleSize - 8 - 3 + row, col , versionInfoBits[ cons.VersionInformationBitsLen - 1 - (col * 3 + row)] == 1)
+			outputGroupOut(moduleSize-8-3+row, col, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1)
 		}
 	}
 }
 
 // drawData : draw data and set mask.
 // Mask rule in Page 58,7.8 Data Masking.
-func drawData(version *model.Version, moduleSize int,codewordsBits []util.Bit, out output.Output, outputGroupOutMask func(x int,y int ,val bool,hasMask bool)) {
+func drawData(version *model.Version, moduleSize int, codewordsBits []util.Bit, out output.Output, outputGroupOutMask func(x int, y int, val bool, hasMask bool)) {
 	var moduleBitIdx int
-	for pos := range iterateModulesPlacement(version,moduleSize,out.IsModuleSet) {
+	for pos := range iterateModulesPlacement(version, moduleSize, out.IsModuleSet) {
 		var bit bool
 		if moduleBitIdx < len(codewordsBits) {
 			bit = codewordsBits[moduleBitIdx] == 1
 		}
 		//out.WriteModule(pos.X ,pos.Y ,bit,pixelSize)
-		outputGroupOutMask(pos.X, pos.Y,bit,true)
-		moduleBitIdx ++
+		outputGroupOutMask(pos.X, pos.Y, bit, true)
+		moduleBitIdx++
 	}
 }
 
@@ -722,17 +718,17 @@ func iterateModulesPlacement(version *model.Version, moduleSize int, isModuleSet
 	//}
 	go func() {
 		isUpward := true
-		x:= moduleSize - 1
-		y:= moduleSize - 1
+		x := moduleSize - 1
+		y := moduleSize - 1
 		for x >= 0 {
-			allModuleBitPos <- &model.PositionAxes{X:x,Y:y}
-			if x > 0{
-				allModuleBitPos <- &model.PositionAxes{X:x - 1,Y:y}
+			allModuleBitPos <- &model.PositionAxes{X: x, Y: y}
+			if x > 0 {
+				allModuleBitPos <- &model.PositionAxes{X: x - 1, Y: y}
 			}
-			if isUpward{
+			if isUpward {
 				y--
 				// turn to next columns group (2 columns)
-				if y < 0{
+				if y < 0 {
 					y = 0
 					x -= 2
 					//if x == remainBitLen{
@@ -740,9 +736,9 @@ func iterateModulesPlacement(version *model.Version, moduleSize int, isModuleSet
 					//}
 					isUpward = false
 				}
-			}else{
+			} else {
 				y++
-				if y >= moduleSize{
+				if y >= moduleSize {
 					y = moduleSize - 1
 					x -= 2
 					//if x == remainBitLen{
@@ -757,9 +753,9 @@ func iterateModulesPlacement(version *model.Version, moduleSize int, isModuleSet
 	}()
 	moduleBitPos := make(chan *model.PositionAxes)
 	go func() {
-		for mb := range allModuleBitPos{
+		for mb := range allModuleBitPos {
 			// check the module whether or not be set
-			if !isModuleSet(mb.X,mb.Y){
+			if !isModuleSet(mb.X, mb.Y) {
 				moduleBitPos <- mb
 			}
 		}
@@ -771,7 +767,7 @@ func iterateModulesPlacement(version *model.Version, moduleSize int, isModuleSet
 // getQRCodeMaskVal :A mask pattern changes which modules are dark and which are light according to a particular rule. The purpose of this step is to modify the QR code to make it as easy for a QR code reader to scan as possible.
 // Page 58,7.8.2 Data mask patterns.
 // Have 8 types in mask,value in( 0 ... 7).
-func getQRCodeMaskVal(x, y int, val bool, mask int) bool{
+func getQRCodeMaskVal(x, y int, val bool, mask int) bool {
 	switch mask {
 	case 0:
 		val = val != (((y + x) % 2) == 0)
@@ -800,7 +796,7 @@ func getQRCodeMaskVal(x, y int, val bool, mask int) bool{
 	return val
 }
 
-func getMircoQRCodeMaskVal(x, y int, val bool, mask int) bool{
+func getMircoQRCodeMaskVal(x, y int, val bool, mask int) bool {
 	switch mask {
 	case 0:
 		val = val != ((y % 2) == 0)

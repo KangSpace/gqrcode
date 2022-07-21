@@ -1,8 +1,8 @@
 package mode
 
 import (
-	"github.com/gqrcode/core/cons"
-	"github.com/gqrcode/util"
+	"github.com/KangSpace/gqrcode/core/cons"
+	"github.com/KangSpace/gqrcode/util"
 	"regexp"
 )
 
@@ -22,9 +22,9 @@ var alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
 
 // AlphanumericModeCodingTable :Page 34,Table 5-Encoding/decoding table for Alphanumeric mode
 var AlphanumericModeCodingTable = map[string]int{
-	"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,
-	"A":10,"B":11,"C":12,"D":13,"E":14,"F":15,"G":16,"H":17,"I":18,"J":19,"K":20,"L":21,"M":22,"N":23,"O":24,"P":25,"Q":26,"R":27,"S":28,"T":29,"U":30,"V":31,"W":32,"X":33,"Y":34,"Z":35,
-	" ":36,"$":37,"%":38,"*":39,"+":40,"-":41,".":42,"/":43,":":44,
+	"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
+	"A": 10, "B": 11, "C": 12, "D": 13, "E": 14, "F": 15, "G": 16, "H": 17, "I": 18, "J": 19, "K": 20, "L": 21, "M": 22, "N": 23, "O": 24, "P": 25, "Q": 26, "R": 27, "S": 28, "T": 29, "U": 30, "V": 31, "W": 32, "X": 33, "Y": 34, "Z": 35,
+	" ": 36, "$": 37, "%": 38, "*": 39, "+": 40, "-": 41, ".": 42, "/": 43, ":": 44,
 }
 
 const AlphaNumericRegExpType = "^[0-9A-Z \\$%\\*\\+\\-\\.\\/\\:]+$"
@@ -33,15 +33,15 @@ type AlphanumericMode struct {
 	*AbstractMode
 }
 
-func NewAlphanumericMode() *AlphanumericMode{
+func NewAlphanumericMode() *AlphanumericMode {
 	return &AlphanumericMode{&AbstractMode{Name: cons.AlphanumericMode}}
 }
 
-func (am *AlphanumericMode) DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream){
-	return am.BuildEncodeData(qr,am.buildDataBits)
+func (am *AlphanumericMode) DataEncode(qr *QRCodeStruct) (dataStream *util.DataStream) {
+	return am.BuildEncodeData(qr, am.buildDataBits)
 }
 
-func getCodingValByRaw(raw string) int{
+func getCodingValByRaw(raw string) int {
 	return AlphanumericModeCodingTable[raw]
 }
 
@@ -53,40 +53,40 @@ func getCodingValByRaw(raw string) int{
 // The binary data is then concatenated and prefixed with the mode indicator and the character count indicator.
 // The mode indicator in the Alphanumeric mode has either 4 bits for QRCode symbols or the number of bits defined in Table2 for Micro QRCode symbols,
 //	 abd the character count indicator has the number of  bits defined in Table3.
-func (am *AlphanumericMode) buildDataBits(qr *QRCodeStruct,dataStream *util.DataStream) (dataBitLen int) {
+func (am *AlphanumericMode) buildDataBits(qr *QRCodeStruct, dataStream *util.DataStream) (dataBitLen int) {
 	inputData := qr.Data
 	dataLen := len(inputData)
 	charsNumPerGroup := 2
 	// divided into groups of 2(two) digits
-	for i:=0;i<dataLen;i += charsNumPerGroup{
+	for i := 0; i < dataLen; i += charsNumPerGroup {
 		var group string
-		if i + charsNumPerGroup <= dataLen{
+		if i+charsNumPerGroup <= dataLen {
 			group = inputData[i : i+charsNumPerGroup]
-		}else{
+		} else {
 			// the last group
-			group = inputData[i : dataLen]
+			group = inputData[i:dataLen]
 		}
 		// group is converted to its `11-bit binary equivalent`.
 		groupBitsLen := 11
 		// the value of first character
 		bit11 := getCodingValByRaw(group[:1])
-		if len(group) == 1{
+		if len(group) == 1 {
 			// the final one character is converted to 6 bits respectively
 			groupBitsLen = 6
-		}else{
-			bit11 = bit11 * 45 + getCodingValByRaw(group[1:])
+		} else {
+			bit11 = bit11*45 + getCodingValByRaw(group[1:])
 		}
-		dataStream.AddIntBit(bit11,groupBitsLen)
+		dataStream.AddIntBit(bit11, groupBitsLen)
 		dataBitLen += groupBitsLen
 	}
 	return dataBitLen
 }
 
-func (n *AlphanumericMode) GetMode() *AbstractMode{
+func (n *AlphanumericMode) GetMode() *AbstractMode {
 	return n.AbstractMode
 }
 
-func(m *AlphanumericMode) IsSupport(data string) bool{
+func (m *AlphanumericMode) IsSupport(data string) bool {
 	match, _ := regexp.Compile(AlphaNumericRegExpType)
 	return match.MatchString(data)
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gqrcode/core/output"
+	"github.com/KangSpace/gqrcode/core/output"
 	"strconv"
 	"testing"
 )
@@ -14,18 +14,18 @@ func TestNewNumeric1MicroQRCode(t *testing.T) {
 	fmt.Println(len(data))
 	//data := "8675309"
 	fileNamePrefix := "numeric_micro_qrcode"
-	fileName := gqrcodePath + fileNamePrefix+".png"
-	out := output.NewPNGOutput(60*4)
+	fileName := gqrcodePath + fileNamePrefix + ".png"
+	out := output.NewPNGOutput(60 * 4)
 	qrcode, err := NewMicroQRCode(data)
-	if err != nil{
-		t.Fatal(err)
-	}
-	err = qrcode.Encode(out,fileName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("version:%v,moduleSize:%d, size:%d, ec:%v mode:%s \n",qrcode.Version,qrcode.Version.GetModuleSize(), out.Size, qrcode.ErrorCorrection,qrcode.Mode.GetMode())
-	fmt.Println("SUCCESS,"+fileName)
+	err = qrcode.Encode(out, fileName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("version:%v,moduleSize:%d, size:%d, ec:%v mode:%s \n", qrcode.Version, qrcode.Version.GetModuleSize(), out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("SUCCESS," + fileName)
 }
 
 // TestNewNumericAllVersionMicroQRCode :Test numeric all version for Micro QRCode
@@ -45,9 +45,9 @@ func TestNewNumericAllVersionMicroQRCode(t *testing.T) {
 		"012345678901234567890123456789",
 		"012345678901234567890",
 	}
-	for _,data:= range dataArr {
-		dLen :=  len(data)
-		fileNamePrefix := "numeric_micro_qrcode"+ strconv.Itoa(dLen)
+	for _, data := range dataArr {
+		dLen := len(data)
+		fileNamePrefix := "numeric_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 4)
 		qrcode, err := NewMicroQRCode(data)
@@ -77,9 +77,9 @@ func TestNewAlphaNumericAllVersionMicroQRCode(t *testing.T) {
 		"012AB+-*C3012AB+-*",
 		"012AB+-*C3012",
 	}
-	for _,data:= range dataArr {
-		dLen :=  len(data)
-		fileNamePrefix := "alphanumeric_micro_qrcode"+ strconv.Itoa(dLen)
+	for _, data := range dataArr {
+		dLen := len(data)
+		fileNamePrefix := "alphanumeric_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 4)
 		qrcode, err := NewMicroQRCode(data)
@@ -106,9 +106,9 @@ func TestNewByteAllVersionMicroQRCode(t *testing.T) {
 		"kangspace.org",
 		"kangspace",
 	}
-	for _,data:= range dataArr {
-		dLen :=  len(data)
-		fileNamePrefix := "byte_micro_qrcode"+ strconv.Itoa(dLen)
+	for _, data := range dataArr {
+		dLen := len(data)
+		fileNamePrefix := "byte_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 5)
 		qrcode, err := NewMicroQRCodeAutoQuiet(data)
