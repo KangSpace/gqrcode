@@ -1,8 +1,9 @@
-package main
+package test
 
 import (
 	"bufio"
 	"fmt"
+	"github.com/KangSpace/gqrcode"
 	"github.com/KangSpace/gqrcode/core/cons"
 	"github.com/KangSpace/gqrcode/core/mode"
 	"github.com/KangSpace/gqrcode/core/model"
@@ -138,7 +139,7 @@ func singleQrCodeGenerateVerify(data, fileName string) (result string) {
 }
 
 func generateTestQRCode(data string, fileName string) error {
-	if qr, err := NewQRCode(data); err == nil {
+	if qr, err := gqrcode.NewQRCode(data); err == nil {
 		err = qr.Encode(output.NewPNGOutput0(), fileName)
 		return err
 	} else {
@@ -227,7 +228,7 @@ func TestNewNumeric1QRCode(t *testing.T) {
 	out := output.NewPNGOutput0()
 	//out := output.NewGIFOutput0()
 	//qrcode, err := NewQRCode0(data, core.QRCODE_MODEL2,mode.NewErrorCorrection(core.L),mode.NewNumericMode())
-	qrcode, err := NewQRCode(data)
+	qrcode, err := gqrcode.NewQRCode(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -261,7 +262,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	//quietZone := model.AutoQuietZone
 	quietZone := model.NoneQuietZone
 	//quietZone := model.NewQuietZone(2)
-	qrcode, err := NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	qrcode, err := gqrcode.NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	//qrcode, err := core.NewQRCode(data)
 	if err != nil {
 		t.Fatal(err)
@@ -275,7 +276,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	quietZone = model.AutoQuietZone
 	//quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	qrcode, err = gqrcode.NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	//qrcode, err := core.NewQRCode(data)
 	if err != nil {
 		t.Fatal(err)
@@ -289,7 +290,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	//quietZone = model.AutoQuietZone
 	quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	qrcode, err = gqrcode.NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -302,7 +303,7 @@ func TestNewNumeric4SizeQRCode(t *testing.T) {
 	quietZone = model.AutoQuietZone
 	//quietZone = model.NoneQuietZone
 	//quietZone = model.NewQuietZone(2)
-	qrcode, err = NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
+	qrcode, err = gqrcode.NewQRCode0(data, cons.QrcodeModel2, nil, mode.NewNumericMode(), quietZone)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +324,7 @@ func TestAlphanumericQRCode(t *testing.T) {
 	fileNamePrefix := "alphanumeric"
 	fileName := gqrcodePath + fileNamePrefix + ".jpg"
 	out := output.NewJPGOutput0()
-	qrcode, err := NewQRCodeAutoQuiet(data)
+	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +358,7 @@ func TestByteQRCode(t *testing.T) {
 	fileNamePrefix := "byte"
 	fileName := gqrcodePath + fileNamePrefix + ".gif"
 	out := output.NewGIFOutput0()
-	qrcode, err := NewQRCode(data)
+	qrcode, err := gqrcode.NewQRCode(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -379,7 +380,7 @@ func TestByteQRCodeBase64(t *testing.T) {
 	fmt.Println(len(data))
 	fileNamePrefix := "base64"
 	out := output.NewJPGOutput0()
-	qrcode, err := NewQRCodeAutoQuiet(data)
+	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -411,7 +412,7 @@ func TestByteChineseQRCode(t *testing.T) {
 	fileNamePrefix := "byte-utf8"
 	fileName := gqrcodePath + fileNamePrefix + ".gif"
 	out := output.NewGIFOutput0()
-	qrcode, err := NewQRCode(data)
+	qrcode, err := gqrcode.NewQRCode(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,7 +437,7 @@ func TestByteQRCodeWithLogo(t *testing.T) {
 	// 264,429
 	out := output.NewJPGOutput(1000)
 	out.AddOption(output.LogoOption(logoImageFilePath))
-	qrcode, err := NewQRCodeAutoQuiet(data)
+	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
 	if err != nil {
 		panic(err)
 	}
@@ -462,7 +463,7 @@ func TestKanjiQRCode(t *testing.T) {
 	fileNamePrefix := "kanji"
 	fileName := gqrcodePath + fileNamePrefix + ".png"
 	out := output.NewPNGOutput0()
-	qrcode, err := NewQRCode(data)
+	qrcode, err := gqrcode.NewQRCode(data)
 	if err != nil {
 		fmt.Println(err)
 		t.Fatal(err)
@@ -579,7 +580,7 @@ func drawQRCode(data string, imageSizes []int, fileNamePrefix string, quietZone 
 	}
 	for _, size := range imageSizes {
 		fileName := gqrcodePath + fileNamePrefix + (strconv.Itoa(size)) + suffixFormat
-		if qrcode, err := NewQRCodeWithQuiet(data, quietZone); err == nil {
+		if qrcode, err := gqrcode.NewQRCodeWithQuiet(data, quietZone); err == nil {
 			outputFn(qrcode, size, fileName)
 			fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
 			fmt.Println("fileName," + fileName)

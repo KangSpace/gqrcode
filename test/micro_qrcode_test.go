@@ -1,7 +1,8 @@
-package main
+package test
 
 import (
 	"fmt"
+	"github.com/KangSpace/gqrcode"
 	"github.com/KangSpace/gqrcode/core/output"
 	"strconv"
 	"testing"
@@ -16,7 +17,7 @@ func TestNewNumeric1MicroQRCode(t *testing.T) {
 	fileNamePrefix := "numeric_micro_qrcode"
 	fileName := gqrcodePath + fileNamePrefix + ".png"
 	out := output.NewPNGOutput(60 * 4)
-	qrcode, err := NewMicroQRCode(data)
+	qrcode, err := gqrcode.NewMicroQRCode(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +51,7 @@ func TestNewNumericAllVersionMicroQRCode(t *testing.T) {
 		fileNamePrefix := "numeric_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 4)
-		qrcode, err := NewMicroQRCode(data)
+		qrcode, err := gqrcode.NewMicroQRCode(data)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -82,7 +83,7 @@ func TestNewAlphaNumericAllVersionMicroQRCode(t *testing.T) {
 		fileNamePrefix := "alphanumeric_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 4)
-		qrcode, err := NewMicroQRCode(data)
+		qrcode, err := gqrcode.NewMicroQRCode(data)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -111,7 +112,7 @@ func TestNewByteAllVersionMicroQRCode(t *testing.T) {
 		fileNamePrefix := "byte_micro_qrcode" + strconv.Itoa(dLen)
 		fileName := gqrcodePath + fileNamePrefix + ".png"
 		out := output.NewPNGOutput(60 * 5)
-		qrcode, err := NewMicroQRCodeAutoQuiet(data)
+		qrcode, err := gqrcode.NewMicroQRCodeAutoQuiet(data)
 		if err != nil {
 			t.Fatal(err)
 		}
