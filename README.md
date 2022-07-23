@@ -181,7 +181,7 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
 
 #### Test QR Code
 
-All QRCode test in [qrcode_test.go](qrcode_test.go) and [micro_qrcode_test.go](micro_qrcode_test.go) files.
+All QRCode test in [qrcode_test.go](test/qrcode_test.go) and [micro_qrcode_test.go](test/micro_qrcode_test.go) files.
 
 
 
