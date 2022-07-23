@@ -530,21 +530,61 @@ func TestAllVersionBestQRCodeImageSize(t *testing.T) {
 	fmt.Println(allSize)
 }
 
-/*a:= allSize[0]
-for i := 0; i < len(allSize)-2; i++ {
-	b := allSize[i+1]
-	gcdVal = (a * b) / gcd(a, b)
-	a = gcdVal
-	fmt.Println("a,b:",a,",",b,"-> val:",gcdVal)
+type ImageSuffix struct {
+	suffix string
 }
-fmt.Println("gcd:", a)*/
 
-func gcd(a, b int) int {
-	if a < b {
-		a, b = b, a
+var (
+	Png = ImageSuffix{".png"}
+	Jpg = ImageSuffix{".jpg"}
+	Gif = ImageSuffix{".gif"}
+)
+
+// TestQRCodeImageSizeToBestVersion : 测试使用最合适的版本生成指定图片大小的二维码
+func TestQRCodeImageSizeToBestVersion(t *testing.T) {
+	fmt.Println("TestQRCodeImageSizeToBestVersion start!")
+	imageSizes := []int{
+		//100,200,300,
+		400,
+		//500,600,700,800,900,1000,
 	}
-	for b != 0 {
-		a, b = b, a%b
+	data := []string{
+		"helloworld123456", "HELLOWORLD123456",
+		// length: 320
+		"HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456HELLOWORLD123456"}
+	fileNamePrefix := "best_version/best_version_"
+	//suffix := Png
+	//suffix := Jpg
+	suffix := Gif
+	for i, subData := range data {
+		drawQRCode(subData, imageSizes, fileNamePrefix+(strconv.Itoa(i))+"_", model.AutoQuietZone, suffix, t)
 	}
-	return a
+	fmt.Println("end!")
+}
+
+func drawQRCode(data string, imageSizes []int, fileNamePrefix string, quietZone *model.QuietZone, suffix ImageSuffix, t *testing.T) {
+	fmt.Println("================")
+	fmt.Println("fileNamePrefix:", fileNamePrefix, " size:", imageSizes)
+	suffixFormat := suffix.suffix
+	outputFn := func(qrcode *mode.QRCodeStruct, size int, fileName string) {
+		var imageOut *output.ImageOutput
+		if suffix == Png {
+			imageOut = output.NewPNGOutput(size)
+		} else if suffix == Jpg {
+			imageOut = output.NewJPGOutput(size)
+		} else if suffix == Gif {
+			imageOut = output.NewGIFOutput(size)
+		}
+		qrcode.Encode(imageOut, fileName)
+	}
+	for _, size := range imageSizes {
+		fileName := gqrcodePath + fileNamePrefix + (strconv.Itoa(size)) + suffixFormat
+		if qrcode, err := NewQRCodeWithQuiet(data, quietZone); err == nil {
+			outputFn(qrcode, size, fileName)
+			fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+			fmt.Println("fileName," + fileName)
+		} else {
+			t.Fatal(err)
+		}
+	}
 }

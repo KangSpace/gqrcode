@@ -37,7 +37,6 @@ var SupportModes = []Mode{
 	NewKanjiModeMode(),
 	NewByteModeMode(),
 	//ECI_MODE,
-	//KANJI_MODE,
 	//STRUCTUREDAPPEND_MODE,
 	//FNC1_MODE,
 	//FNC1_MODE_P1,
@@ -812,4 +811,30 @@ func getMircoQRCodeMaskVal(x, y int, val bool, mask int) bool {
 		break
 	}
 	return val
+}
+
+// GetMode : Get first supported mode in SupportModes
+// param: data
+func GetMode(data string) (Mode, error) {
+	for _, mode := range SupportModes {
+		if mode.IsSupport(data) {
+			return mode, nil
+		}
+	}
+	return nil, errors.New("please check the input data,can not find a valid Mode for data:" + data)
+}
+
+// GetSupportedModes : Get all supported modes for input data
+// param: data
+func GetSupportedModes(data string) (modes []Mode, err error) {
+	modes = make([]Mode, 0)
+	for _, mode := range SupportModes {
+		if mode.IsSupport(data) {
+			modes = append(modes, mode)
+		}
+	}
+	if len(modes) < 1 {
+		return nil, errors.New("please check the input data,can not find a valid Mode for data:" + data)
+	}
+	return modes, err
 }

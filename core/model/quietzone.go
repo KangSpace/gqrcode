@@ -13,14 +13,14 @@ type QuietZone struct {
 
 var (
 	// QuietZoneZero : no quiet zone
-	QuietZoneZero = QuietZone{0}
+	QuietZoneZero = &QuietZone{0}
 	// QuietZoneOne : one multiple quiet zone
-	QuietZoneOne = QuietZone{1}
+	QuietZoneOne = &QuietZone{1}
 	// QuietZoneTwo : two multiple quiet zone
-	QuietZoneTwo = QuietZone{2}
+	QuietZoneTwo = &QuietZone{2}
 	// QuietZoneFour : four multiple quiet zone
-	QuietZoneFour = QuietZone{4}
-	QuietZones    = []*QuietZone{&QuietZoneZero, &QuietZoneOne, &QuietZoneTwo, &QuietZoneFour}
+	QuietZoneFour = &QuietZone{4}
+	QuietZones    = []*QuietZone{QuietZoneZero, QuietZoneOne, QuietZoneTwo, QuietZoneFour}
 )
 
 // NewDefaultQuietZone :new default quiet zone by version
@@ -43,8 +43,7 @@ func NewStandardQuietZone(version *Version) *QuietZone {
 
 // NewPopularQuietZone :new popular quiet zone, it's 2 multiple size.
 func NewPopularQuietZone() *QuietZone {
-	qz := &QuietZone{2}
-	return qz
+	return GetQuietZone(2)
 }
 
 func NewQuietZone(size int) *QuietZone {
@@ -65,3 +64,13 @@ var NoneQuietZone = NewQuietZone(0)
 
 // AutoQuietZone : auto quiet zone, quiet zone size by NewDefaultQuietZone()
 var AutoQuietZone = NewQuietZone(-1)
+
+// GetQuietZone : Get quiet zone by quietZoneMultiple.
+func GetQuietZone(quietZoneMultiple int) *QuietZone {
+	for _, zone := range QuietZones {
+		if zone.Multiple == quietZoneMultiple {
+			return zone
+		}
+	}
+	return NewQuietZone(quietZoneMultiple)
+}

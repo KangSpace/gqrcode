@@ -66,6 +66,11 @@ func NewQRCodeAutoQuiet(content string) (*mode.QRCodeStruct, error) {
 	return NewQRCode0(content, "", nil, nil, model.AutoQuietZone)
 }
 
+// NewQRCodeWithQuiet :Create a QRCode(Model 2) with QuietZone.
+func NewQRCodeWithQuiet(content string, quietZone *model.QuietZone) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, "", nil, nil, quietZone)
+}
+
 // NewMicroQRCode :Create a Micro QRCode.
 func NewMicroQRCode(content string) (*mode.QRCodeStruct, error) {
 	return NewQRCode0(content, cons.MicroQrcode, nil, nil, nil)
@@ -74,6 +79,11 @@ func NewMicroQRCode(content string) (*mode.QRCodeStruct, error) {
 // NewMicroQRCodeAutoQuiet :Create a Micro QRCode with model.AutoQuietZone.
 func NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct, error) {
 	return NewQRCode0(content, cons.MicroQrcode, nil, nil, model.AutoQuietZone)
+}
+
+// NewMicroQRCodeWithQuiet :Create a Micro QRCode with QuietZone.
+func NewMicroQRCodeWithQuiet(content string, quietZone *model.QuietZone) (*mode.QRCodeStruct, error) {
+	return NewQRCode0(content, cons.MicroQrcode, nil, nil, quietZone)
 }
 
 // DataAnalyzer : struct for Data Analysis handle
@@ -92,31 +102,20 @@ func (da *DataAnalyzer) analyze(format cons.Format, ec *mode.ErrorCorrection, m 
 	// Choose mode
 	var err error
 	if m == nil {
-		if m, err = getMode(da.Data); err != nil {
+		if m, err = mode.GetMode(da.Data); err != nil {
 			return nil, nil, nil, err
 		}
 	}
-	dataLen := len(da.Data)
 	var version *model.Version
 	var ecLevel cons.ErrorCorrectionLevel
 	if ec != nil {
 		ecLevel = ec.Level
 	}
+	dataLen := len(da.Data)
 	// Choose version and error correction level.
 	version, ecLevel = model.GetVersionByInputDataLength(format, dataLen, m.GetMode().Name, ecLevel)
 	if ec == nil {
 		ec = mode.NewErrorCorrection(ecLevel)
 	}
 	return version, ec, m, nil
-}
-
-// 获取支持的内容模式
-// param: data
-func getMode(data string) (mode.Mode, error) {
-	for _, mode := range mode.SupportModes {
-		if mode.IsSupport(data) {
-			return mode, nil
-		}
-	}
-	return nil, errors.New("please check the input data,can not find a valid Mode for data:" + data)
 }

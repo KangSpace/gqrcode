@@ -9,7 +9,7 @@ import (
 	"github.com/KangSpace/gqrcode/core/output"
 )
 
-var QRCODE_FORMART = map[string]string{
+var QrcodeFormart = map[string]string{
 	"QRCODE":       "QRCode",
 	"MICRO_QRCODE": "Micro QRCode",
 }
@@ -52,6 +52,20 @@ func NewQRCodeStruct(data string, format cons.Format, version *model.Version, mo
 	qr.AlignmentPattern = model.NewAlignmentPattern(version)
 	qr.TimingPattern = model.NewTimingPattern(version)
 	qr.QuietZone = qz
+	return qr
+}
+
+// resetQRCodeStruct :create new QRCodeStruct from QRCodeStruct
+// param: data,the input data
+// param: format, the QRCode Format(cons.Format), value in (cons.QRCODE,cons.QrcodeModel1,cons.QrcodeModel2,cons.MicroQrcode)
+// param: version, the QRCode Version(model.Version), value take by model.NewVersion(model.VersionId),versionId in (model.VERSION1 to model.VERSION40,and model.VersionM1 to model.VersionM4)
+// param: mode,the encode mode(mode.Mode), value in (mode.NumericMode)
+// param: ec,the Error Correction(cons.ErrorCorrectionLevel), value in (cons.L,cons.M,cons.Q,cons.H,cons.NONE)
+// return: mode.QRCodeStruct
+// return: error
+func resetQRCodeStruct(qr *QRCodeStruct) *QRCodeStruct {
+	qr.AlignmentPattern = model.NewAlignmentPattern(qr.Version)
+	qr.TimingPattern = model.NewTimingPattern(qr.Version)
 	return qr
 }
 
@@ -140,6 +154,8 @@ func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output, err 
 func (qr *QRCodeStruct) buildQRCode(out output.Output) output.Output {
 	if out.GetBaseOutput().Size == output.AUTO_SIZE {
 		out.Init(qr.Version, qr.QuietZone)
+	} else {
+		//qr.resetQRCodeVersionByInputData(out.GetBaseOutput().Size)
 	}
 	ds := qr.Mode.DataEncode(qr)
 	mode := qr.Mode.GetMode()
@@ -149,6 +165,83 @@ func (qr *QRCodeStruct) buildQRCode(out output.Output) output.Output {
 	finalMessage := mode.BuildFinalErrorCorrectionCodewords(qr, ds)
 	// draw image
 	return mode.BuildModuleInMatrix(qr, finalMessage, out)
+}
+
+// resetQRCodeVersionByInputData : reset version and mode by input data on specific qrcode size
+func (qr *QRCodeStruct) resetQRCodeVersionByInputData(qrcodeSize int) {
+	// 若存在指定大小, 则取与大小成比例的版本和错误级别
+	version, m, ecLevel := GetBestSizeVersionByInputDataLength(qr.Data, qr.QuietZone, qrcodeSize, qr.Format, qr.Version.Id)
+	qr.Version = version
+	qr.Mode = m
+	if ecLevel != qr.ErrorCorrection.Level {
+		qr.ErrorCorrection = NewErrorCorrection(ecLevel)
+	}
+	resetQRCodeStruct(qr)
+}
+
+// GetBestSizeVersionByInputDataLength : Get best qrcode size for version by input data.
+func GetBestSizeVersionByInputDataLength(data string, quietZone *model.QuietZone, qrcodeSize int, format cons.Format, srcVId model.VersionId) (*model.Version, Mode, cons.ErrorCorrectionLevel) {
+	maxVId := model.VERSION40
+	//minVId := model.VERSION1
+	// set vid start value
+	minVId := srcVId
+	condition := func(vId model.VersionId) bool {
+		return vId <= maxVId
+	}
+	vIdUpdate := func(vId model.VersionId) int {
+		vId++
+		return vId
+	}
+	if format == cons.MicroQrcode {
+		//minVId = model.VersionM1
+		maxVId = model.VersionM4
+		condition = func(vId model.VersionId) bool {
+			return vId >= maxVId
+		}
+		vIdUpdate = func(vId model.VersionId) int {
+			vId--
+			return vId
+		}
+	}
+	dataLen := len(data)
+	// fetch all supported modes
+	modes, err := GetSupportedModes(data)
+	if err != nil {
+		panic(err)
+	}
+	var candidateVersion *model.Version
+	var candidateMode Mode
+	var candidateEcLevel cons.ErrorCorrectionLevel
+versionCicle:
+	for vId := minVId; condition(vId); vId = vIdUpdate(vId) {
+		if ecMap, ok := model.VersionSymbolCharsAndInputDataCapacityMap[vId]; ok {
+			for ecLevel := cons.H; ecLevel > 0; ecLevel-- {
+				if capacity, ok := ecMap[ecLevel]; ok {
+					for _, modeObj := range modes {
+						mode_ := (modeObj).GetMode().Name
+						if size, ok := capacity.DataCapacity[mode_]; ok && size >= dataLen {
+							tempVersion := model.GetVersion(vId)
+							totalModuleSize := tempVersion.GetTotalModuleSize(quietZone)
+							isSizeMatch := (qrcodeSize+totalModuleSize)%totalModuleSize == 0
+							if candidateVersion == nil || isSizeMatch {
+								candidateVersion = tempVersion
+								candidateEcLevel = ecLevel
+								candidateMode = modeObj
+								// use min version for qrcode
+								if isSizeMatch {
+									break versionCicle
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if candidateVersion == nil {
+		panic(errors.New("can not find DataCapacity for data:" + data))
+	}
+	return candidateVersion, candidateMode, candidateEcLevel
 }
 
 func (qr *QRCodeStruct) IsMicroQRCode() bool {

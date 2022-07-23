@@ -92,6 +92,15 @@ var VersionM1ToM4IdNameMap = map[VersionId]VersionName{
 	-4: "M4",
 }
 
+func GetVersion(id VersionId) *Version {
+	for _, version := range Versions {
+		if version.Id == id {
+			return version
+		}
+	}
+	return NewVersion(id)
+}
+
 func NewVersion(id VersionId) *Version {
 	var name VersionName
 	if id < 0 {
@@ -286,7 +295,7 @@ func GetVersionByInputDataLength(format cons.Format, dataLen int, mode cons.Mode
 			for ecLevel := cons.H; ecLevel > 0; ecLevel-- {
 				if capacity, ok := ecMap[ecLevel]; ok {
 					if size, ok := capacity.DataCapacity[mode]; (level == ecLevel) || (ok && size >= dataLen) {
-						return NewVersion(vId), ecLevel
+						return GetVersion(vId), ecLevel
 					} else {
 						if vId == maxVId && ecLevel == cons.L && size < dataLen {
 							panic(errors.New("input data is to long for Mode: " + mode + ",the max capacity is " + strconv.Itoa(size) +
@@ -342,6 +351,10 @@ func (v *Version) GetModuleSize() int {
 		size = (-v.Id-1)*2 + 11
 	}
 	return size
+}
+
+func (v *Version) GetTotalModuleSize(qz *QuietZone) int {
+	return v.GetModuleSize() + qz.GetQuietZoneSize()
 }
 
 func (v *Version) GetDefaultPixelSize() int {

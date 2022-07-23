@@ -14,9 +14,9 @@ func Resize(src image.Image, newSize int) *image.NRGBA {
 	return Resize0(src, newSize, newSize)
 }
 
-// Resize0 :TODO Need optimize...
+// Resize0 :
 func Resize0(src image.Image, width int, height int) *image.NRGBA {
-	return imaging.Resize(src, width, height, imaging.CatmullRom)
+	return imaging.Resize(src, width, height, imaging.NearestNeighbor)
 }
 
 // Grayscale produces a grayscale version of the image.
@@ -24,26 +24,7 @@ func Grayscale(src image.Image) *image.NRGBA {
 	return imaging.Grayscale(src)
 }
 
-// reference: Wellner 1993, Derek Bradley and Gerhard Roth : Adaptive Thresholding Using the Integral Image
-// https://blog.csdn.net/hhygcy/article/details/4280165
-// https://www.cnblogs.com/Imageshop/archive/2013/04/22/3036127.html
-// http://www.derekbradley.ca/AdaptiveThresholding/index.html
-// http://www.scs.carleton.ca/~roth/iit-publications-iti/docs/gerh-50002.pdf
-func wellnerAdaptiveThreshold(src image.Image) int {
-	//width := src.Bounds().Dx()
-	//height := src.Bounds().Dy()
-	//s:= width >> 3
-	//// static
-	//t:= 15
-	//i, j:=0
-	//sum,count:=0,0
-	//index:= 0;
-	//x1, y1, x2, y2:= 0,0,0,0
-	//s2 := s/2
-	return 0
-}
-
-// Binarization  To binary image from grayscale image,
+// Binarization  : To binary image from grayscale image,
 func Binarization(src image.Image) *image.NRGBA {
 	dst := image.NewNRGBA(src.Bounds())
 	srcW := src.Bounds().Dx()
