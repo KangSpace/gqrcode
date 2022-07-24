@@ -4,6 +4,7 @@ import (
 	"github.com/KangSpace/gqrcode/core/model"
 	"image"
 	"image/color"
+	"io"
 	"math"
 )
 
@@ -84,6 +85,7 @@ type Output interface {
 	Clone() Output
 	ResizeToFit(moduleSize int, quietZoneSize int, pixelSize int)
 	Save(fileName string) error
+	SaveToWriter(w io.Writer) error
 	SaveToBase64() (string, error)
 }
 

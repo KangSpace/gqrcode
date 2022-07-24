@@ -7,6 +7,7 @@ import (
 	"github.com/KangSpace/gqrcode/core/logger"
 	"github.com/KangSpace/gqrcode/core/model"
 	"github.com/KangSpace/gqrcode/core/output"
+	"io"
 )
 
 var QrcodeFormart = map[string]string{
@@ -115,20 +116,26 @@ func (qr *QRCodeStruct) SetMask(mask int) {
 
 // Encode :
 func (qr *QRCodeStruct) Encode(out output.Output, fileName string) (err error) {
-	if out_, err := qr.innerEncode(out); err == nil {
-		return out_.Save(fileName)
-	} else {
-		return err
+	if out, err := qr.innerEncode(out); err == nil {
+		return out.Save(fileName)
 	}
+	return err
+}
+
+// EncodeToWriter :
+func (qr *QRCodeStruct) EncodeToWriter(out output.Output, writer io.Writer) (err error) {
+	if out, err = qr.innerEncode(out); err == nil {
+		return out.SaveToWriter(writer)
+	}
+	return err
 }
 
 // EncodeToBase64 :
 func (qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string, err error) {
-	if out_, err := qr.innerEncode(out); err == nil {
-		return out_.SaveToBase64()
-	} else {
-		return "", err
+	if out, err := qr.innerEncode(out); err == nil {
+		return out.SaveToBase64()
 	}
+	return "", err
 }
 
 func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output, err error) {

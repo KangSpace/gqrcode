@@ -379,7 +379,7 @@ func TestByteQRCodeBase64(t *testing.T) {
 	data := "https://kangspace.org"
 	fmt.Println(len(data))
 	fileNamePrefix := "base64"
-	out := output.NewJPGOutput0()
+	out := output.NewPNGOutput0()
 	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
 	if err != nil {
 		t.Fatal(err)
@@ -402,6 +402,32 @@ func TestByteQRCodeBase64(t *testing.T) {
 		fmt.Println("FAIL," + result)
 		t.Fatal(err)
 	}
+}
+
+func TestByteQRCodeSaveToWriter(t *testing.T) {
+	data := "https://kangspace.org"
+	fmt.Println(len(data))
+	fileNamePrefix := "saveToWriter"
+	out := output.NewPNGOutput0()
+	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileName := gqrcodePath + fileNamePrefix + ".png"
+	var file *os.File
+	if file, err = os.Open(fileName); err != nil {
+		if file, err = os.Create(fileName); err == nil {
+			err := qrcode.EncodeToWriter(out, file)
+			if err == nil {
+				fmt.Println("SUCCESS")
+			}
+		}
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
 }
 
 func TestByteChineseQRCode(t *testing.T) {

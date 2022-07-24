@@ -12,6 +12,7 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"os"
 )
 
@@ -35,25 +36,25 @@ func NewPNGOutput0() *ImageOutput {
 }
 
 func NewJPGOutput(size int) *ImageOutput {
-	out := &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: size}}
+	out := &ImageOutput{BaseOutput: &BaseOutput{Type: JPG, Size: size}}
 	out.initImage(size)
 	return out
 }
 
 // NewJPGOutput0 :Output a new JPG image by auto size.
 func NewJPGOutput0() *ImageOutput {
-	out := &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: AUTO_SIZE}}
+	out := &ImageOutput{BaseOutput: &BaseOutput{Type: JPG, Size: AUTO_SIZE}}
 	return out
 }
 func NewGIFOutput(size int) *ImageOutput {
-	out := &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: size}}
+	out := &ImageOutput{BaseOutput: &BaseOutput{Type: GIF, Size: size}}
 	out.initImage(size)
 	return out
 }
 
 // NewGIFOutput0 :Output a new GIF image by auto size.
 func NewGIFOutput0() *ImageOutput {
-	out := &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: AUTO_SIZE}}
+	out := &ImageOutput{BaseOutput: &BaseOutput{Type: GIF, Size: AUTO_SIZE}}
 	return out
 }
 
@@ -115,37 +116,40 @@ func (out *ImageOutput) GetModule(x int, y int) bool {
 func (out *ImageOutput) Save(fileName string) error {
 	if file, err := os.Create(fileName); err == nil {
 		defer file.Close()
-		switch out.BaseOutput.Type {
-		case JPG:
-			return jpeg.Encode(file, out.image, nil)
-		case PNG:
-			return png.Encode(file, out.image)
-		case GIF:
-			return gif.Encode(file, out.image, nil)
-		}
-		return errors.New("not supported \"" + string(out.BaseOutput.Type) + "\"")
-
+		return out.SaveToWriter(file)
 	} else {
 		return err
 	}
 }
 
+// SaveToWriter : save to any io.Writer
+func (out *ImageOutput) SaveToWriter(writer io.Writer) error {
+	switch out.BaseOutput.Type {
+	case JPG:
+		return jpeg.Encode(writer, out.image, nil)
+	case PNG:
+		return png.Encode(writer, out.image)
+	case GIF:
+		return gif.Encode(writer, out.image, nil)
+	}
+	return errors.New("not supported \"" + string(out.BaseOutput.Type) + "\"")
+}
+
+// SaveToBase64 : save image to base64 string
 func (out *ImageOutput) SaveToBase64() (base64Str string, err error) {
 	imageBytes := bytes.NewBuffer(nil)
 	var base64UrlImageType util.Base64URLImageType
 	switch out.BaseOutput.Type {
 	case JPG:
-		err = jpeg.Encode(imageBytes, out.image, nil)
 		base64UrlImageType = util.JpegType
 	case PNG:
-		err = png.Encode(imageBytes, out.image)
 		base64UrlImageType = util.PngType
 	case GIF:
-		err = gif.Encode(imageBytes, out.image, nil)
 		base64UrlImageType = util.GifType
 	default:
 		return "", errors.New("not supported \"" + string(out.BaseOutput.Type) + "\"")
 	}
+	err = out.SaveToWriter(imageBytes)
 	if err != nil {
 		return "", err
 	}
