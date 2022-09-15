@@ -373,6 +373,20 @@ func TestByteQRCode(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+func TestByteQRCodeWithColor(t *testing.T) {
+	data := "https://kangspace.org"
+	fmt.Println(len(data))
+	fileNamePrefix := "byte_color"
+	fileName := gqrcodePath + fileNamePrefix + ".gif"
+	out := output.NewOutput(&output.BaseOutput{Type: output.PNG, Size: 400, CodeColor: output.BlueCodeColor})
+	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qrcode.Encode(out, fileName)
+	fmt.Printf("version:%v, size:%d, ec:%v mode:%s \n", qrcode.Version, out.Size, qrcode.ErrorCorrection, qrcode.Mode.GetMode())
+	fmt.Println("fileName," + fileName)
+}
 
 // TestByteQRCodeBase64 :Test Base64 output string
 func TestByteQRCodeBase64(t *testing.T) {

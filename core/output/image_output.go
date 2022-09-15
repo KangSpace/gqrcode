@@ -23,6 +23,12 @@ type ImageOutput struct {
 	*BaseOutput
 }
 
+func NewOutput(output *BaseOutput) *ImageOutput {
+	out := &ImageOutput{BaseOutput: output}
+	out.initImage(output.Size)
+	return out
+}
+
 func NewPNGOutput(size int) *ImageOutput {
 	out := &ImageOutput{BaseOutput: &BaseOutput{Type: PNG, Size: size}}
 	out.initImage(size)
@@ -77,21 +83,26 @@ func (out *ImageOutput) Init(version *model.Version, qz *model.QuietZone) {
 
 // Write : write data
 func (out *ImageOutput) Write(x int, y int, black bool) {
-	setColor := image.White
-	if black {
-		setColor = image.Black
-	}
+	setColor := out.getWriteColor(black)
 	out.image.Set(x, y, setColor)
 	out.modules[x][y] = &black
 }
 
 // WriteModule : write data
 func (out *ImageOutput) WriteModule(x int, y int, black bool, pixelSize int) {
-	setColor := image.White
-	if black {
-		setColor = image.Black
-	}
+	setColor := out.getWriteColor(black)
 	out.WriteModuleColor(x, y, black, setColor, pixelSize)
+}
+
+// getWriteColor: get color by BaseOutput.CodeColor
+func (out *ImageOutput) getWriteColor(black bool) color.Color {
+	if black {
+		if out.BaseOutput.CodeColor.DataColor != nil {
+			return out.BaseOutput.CodeColor.DataColor
+		}
+		return image.Black.C
+	}
+	return image.White.C
 }
 
 func (out *ImageOutput) WriteModuleColor(x int, y int, dark bool, setColor color.Color, pixelSize int) {
@@ -240,9 +251,13 @@ func (out *ImageOutput) ResizeToFit(moduleSize int, quietZoneSize int, pixelSize
 	return
 }
 
+func (out *ImageOutput) GetColor() CodeColor {
+	return DefaultCodeColor
+}
+
 // Clone : Shallow copy BaseOutput and modules from output, init new image instance
 func (out *ImageOutput) Clone() Output {
-	clone := &ImageOutput{BaseOutput: &BaseOutput{Type: out.Type, Size: out.Size, Options: out.Options}}
+	clone := &ImageOutput{BaseOutput: &BaseOutput{Type: out.Type, Size: out.Size, Options: out.Options, CodeColor: out.CodeColor}}
 	clone.initImage(out.Size)
 	return clone
 }

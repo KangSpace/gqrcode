@@ -36,10 +36,33 @@ type BaseOutput struct {
 	// image type
 	Type Type
 	// image width/height
-	Size    int
-	Options []*Option
-	modules [][]*bool
+	Size      int
+	Options   []*Option
+	CodeColor CodeColor
+	modules   [][]*bool
 }
+
+// CodeColor color for qrcode
+type CodeColor struct {
+	AlignmentColor     color.Color
+	TimingPatternColor color.Color
+	QuietZoneColor     color.Color
+	DataColor          color.Color
+}
+
+//
+var (
+	// DefaultCodeColor default color is black for QRCode
+	DefaultCodeColor = CodeColor{image.Black, image.Black, image.White, image.Black}
+	// BlueCodeColor #007FFF/rgba(0,127,255,1)
+	BlueCodeColor = CodeColor{color.RGBA{0, 127, 255, 1}, color.RGBA{0, 127, 255, 1}, image.White, color.RGBA{0, 127, 255, 1}}
+	// RedCodeColor #FF5219/rgba(255,82,25,1)
+	RedCodeColor = CodeColor{color.RGBA{255, 82, 25, 1}, color.RGBA{255, 82, 25, 1}, image.White, color.RGBA{255, 82, 25, 1}}
+	// OrangeCodeColor #FF9200/rgba(255,146,0,1)
+	OrangeCodeColor = CodeColor{color.RGBA{255, 146, 0, 1}, color.RGBA{255, 146, 0, 1}, image.White, color.RGBA{255, 146, 0, 1}}
+	// GreenCodeColor #00B042/rgba(0,176,66,1)
+	GreenCodeColor = CodeColor{color.RGBA{0, 176, 66, 1}, color.RGBA{0, 176, 66, 1}, image.White, color.RGBA{0, 176, 66, 1}}
+)
 
 // LogoOption :  Option for add logo image at center of QRCode
 func LogoOption(logoImage string) *Option {
@@ -87,6 +110,7 @@ type Output interface {
 	Save(fileName string) error
 	SaveToWriter(w io.Writer) error
 	SaveToBase64() (string, error)
+	GetColor() CodeColor
 }
 
 // EvalPenalty :Evaluate Penalty for QRCode.
