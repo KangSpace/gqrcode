@@ -373,7 +373,7 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct, codewordsBits []uti
 	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(), out)
 
 	// output group with mask for common
-	outputGroupOutMask := func(x int, y int, val bool, hasMask bool) {
+	outputGroupOutMask := func(x int, y int, val bool, hasMask bool, part cons.QRCodeStructPart) {
 		srcVal := val
 		for i, out_ := range maskOutputGroup {
 			newVal := srcVal
@@ -384,17 +384,17 @@ func (m *AbstractMode) BuildModuleInMatrix(qr *QRCodeStruct, codewordsBits []uti
 					newVal = getMircoQRCodeMaskVal(x, y, srcVal, i)
 				}
 			}
-			out_.WriteModule(x, y, newVal, pixelSize)
+			out_.WriteModule(x, y, newVal, pixelSize, part)
 		}
 	}
 	// output group no mask for common
-	outputGroupOut := func(x int, y int, val bool) {
-		outputGroupOutMask(x, y, val, false)
+	outputGroupOut := func(x int, y int, val bool, part cons.QRCodeStructPart) {
+		outputGroupOutMask(x, y, val, false, part)
 	}
 	// output group with mask for format info
-	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int) {
+	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int, part cons.QRCodeStructPart) {
 		for i, out_ := range maskOutputGroup {
-			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize)
+			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize, part)
 		}
 	}
 
@@ -435,7 +435,7 @@ func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct, codeword
 	maskOutputGroup := newQRCodeMaskOutputGroup(qr.GetMaskCount(), out)
 
 	// output group with mask for common
-	outputGroupOutMask := func(x int, y int, val bool, hasMask bool) {
+	outputGroupOutMask := func(x int, y int, val bool, hasMask bool, part cons.QRCodeStructPart) {
 		srcVal := val
 		for i, out_ := range maskOutputGroup {
 			newVal := srcVal
@@ -446,17 +446,17 @@ func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct, codeword
 					newVal = getMircoQRCodeMaskVal(x, y, srcVal, i)
 				}
 			}
-			out_.WriteModule(x, y, newVal, pixelSize)
+			out_.WriteModule(x, y, newVal, pixelSize, part)
 		}
 	}
 	// output group no mask for common
-	outputGroupOut := func(x int, y int, val bool) {
-		outputGroupOutMask(x, y, val, false)
+	outputGroupOut := func(x int, y int, val bool, part cons.QRCodeStructPart) {
+		outputGroupOutMask(x, y, val, false, part)
 	}
 	// output group with mask for format info
-	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int) {
+	outputGroupFormatMaskOut := func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int, part cons.QRCodeStructPart) {
 		for i, out_ := range maskOutputGroup {
-			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize)
+			out_.WriteModule(x, y, maskBits[i][maskBitIdx] == 1, pixelSize, part)
 		}
 	}
 
@@ -479,12 +479,12 @@ func (m *AbstractMode) BuildModuleInMatrixMicroQRCode(qr *QRCodeStruct, codeword
 	return out
 }
 
-func drawDarkBlock(version model.VersionId, outputGroupOut func(x int, y int, val bool)) {
+func drawDarkBlock(version model.VersionId, outputGroupOut func(x int, y int, val bool, part cons.QRCodeStructPart)) {
 	// Dark Block: All QR codes have a dark module beside the bottom left finder pattern. More specifically,
 	// the dark module is always located at the coordinate ([(4 * V) + 9], 8) where V is the version of the QR code.
 	if version > 0 {
 		//out.WriteModule(model.FINDER_PATTERN_MODULE_SIZE + 1, 4 * version + 9,true,pixelSize)
-		outputGroupOut(model.FINDER_PATTERN_MODULE_SIZE+1, 4*version+9, true)
+		outputGroupOut(model.FINDER_PATTERN_MODULE_SIZE+1, 4*version+9, true, cons.FinderPatternPart)
 	}
 }
 
@@ -494,7 +494,7 @@ func drawDarkBlock(version model.VersionId, outputGroupOut func(x int, y int, va
 //  Near the top-left finder pattern, a one-module strip must be reserved below and to the right of the separator.
 //	Near the top-right finder pattern, a one-module strip must be reserved below the separator.
 //	Near the bottom-left finder pattern, a one-module strip must be reserved to the right of the separator.
-func drawFinderPatternAndSeparator(version *model.Version, outputGroupOut func(x int, y int, val bool)) {
+func drawFinderPatternAndSeparator(version *model.Version, outputGroupOut func(x int, y int, val bool, part cons.QRCodeStructPart)) {
 	finderPatterns := version.GetFinderPattern()
 	fpModules := finderPatterns.GetModules()
 	separatorLen := model.FINDER_PATTERN_MODULE_SIZE + 1
@@ -503,7 +503,7 @@ func drawFinderPatternAndSeparator(version *model.Version, outputGroupOut func(x
 		for row, bits := range fpModules {
 			for col, bit := range bits {
 				//out.WriteModule(pos.Axes.X+row, pos.Axes.Y + col,bit == 1,pixelSize)
-				outputGroupOut(pos.Axes.X+row, pos.Axes.Y+col, bit == 1)
+				outputGroupOut(pos.Axes.X+row, pos.Axes.Y+col, bit == 1, cons.FinderPatternPart)
 			}
 		}
 		// draw separators
@@ -523,16 +523,16 @@ func drawFinderPatternAndSeparator(version *model.Version, outputGroupOut func(x
 			}
 			// draw horizontal separators
 			//out.WriteModule(separatorHX + lop,separatorHY ,false,pixelSize)
-			outputGroupOut(separatorHX+lop, separatorHY, false)
+			outputGroupOut(separatorHX+lop, separatorHY, false, cons.FinderPatternPart)
 			// draw vertical separators
 			//out.WriteModule(separatorVX ,separatorVY + lop,false,pixelSize)
-			outputGroupOut(separatorVX, separatorVY+lop, false)
+			outputGroupOut(separatorVX, separatorVY+lop, false, cons.FinderPatternPart)
 		}
 	}
 }
 
 // drawAlignmentPattern :draw alignment pattern,version 2 or larger must contain alignment pattern.
-func drawAlignmentPattern(version *model.Version, pattern *model.AlignmentPattern, outputGroupOut func(x int, y int, val bool)) {
+func drawAlignmentPattern(version *model.Version, pattern *model.AlignmentPattern, outputGroupOut func(x int, y int, val bool, part cons.QRCodeStructPart)) {
 	if version.Id < 2 {
 		return
 	}
@@ -543,13 +543,13 @@ func drawAlignmentPattern(version *model.Version, pattern *model.AlignmentPatter
 				// pos is alignment center point axes,need transform to left_top point axes.
 				//out.WriteModule(quietZoneSize + pos.X - 2 + row,quietZoneSize + pos.Y - 2+col,bit == 1,pixelSize)
 				//out.WriteModule(pos.X - 2 + row, pos.Y - 2 + col,bit == 1,pixelSize)
-				outputGroupOut(pos.X-2+row, pos.Y-2+col, bit == 1)
+				outputGroupOut(pos.X-2+row, pos.Y-2+col, bit == 1, cons.AlignmentPart)
 			}
 		}
 	}
 }
 
-func drawTimingPattern(timingPattern *model.TimingPattern, moduleSize int, outputGroupOut func(x int, y int, val bool)) {
+func drawTimingPattern(timingPattern *model.TimingPattern, moduleSize int, outputGroupOut func(x int, y int, val bool, part cons.QRCodeStructPart)) {
 	//startPos := model.FINDER_PATTERN_MODULE_SIZE
 	// max loop count is moduleSize - 16
 	//for i:=0; i< moduleSize - model.FINDER_PATTERN_MODULE_SIZE * 2 - 2; i++ {
@@ -565,16 +565,16 @@ func drawTimingPattern(timingPattern *model.TimingPattern, moduleSize int, outpu
 	loopLen := h.To.X - h.From.X
 	for i := 0; i < loopLen; i++ {
 		// draw horizontal timing pattern
-		outputGroupOut(h.From.X+i, h.From.Y, i%2 == 0)
+		outputGroupOut(h.From.X+i, h.From.Y, i%2 == 0, cons.TimingPatternPart)
 		// draw vertical timing pattern
-		outputGroupOut(w.From.X, w.From.Y+i, i%2 == 0)
+		outputGroupOut(w.From.X, w.From.Y+i, i%2 == 0, cons.TimingPatternPart)
 	}
 }
 
 // drawFormatInformation :
 // Page 63,7.9 Format information.
 // The format information is a 15-bit sequence containing 5 data bits,with 10 error correction bits calculated using the (15,5) BHC code.
-func drawFormatInformation(qr *QRCodeStruct, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
+func drawFormatInformation(qr *QRCodeStruct, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int, part cons.QRCodeStructPart)) {
 	moduleSize := qr.Version.GetModuleSize()
 	version := qr.Version.Id
 	level := qr.ErrorCorrection.Level
@@ -586,7 +586,7 @@ func drawFormatInformation(qr *QRCodeStruct, outputGroupMaskOut func(x int, y in
 }
 
 // Draw QRCode format information
-func drawQRCodeFormatInformation(level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
+func drawQRCodeFormatInformation(level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int, part cons.QRCodeStructPart)) {
 	formatInfoBits := cons.FormatInformationBitsMap[level]
 	for i := 0; i < 15; i++ {
 		// 0 - 6
@@ -596,21 +596,21 @@ func drawQRCodeFormatInformation(level int, moduleSize int, outputGroupMaskOut f
 				x++
 			}
 			//out.WriteModule(x, 8 , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(x, 8, formatInfoBits, i)
+			outputGroupMaskOut(x, 8, formatInfoBits, i, cons.FormatPart)
 			if i <= 6 {
 				//out.WriteModule(8, moduleSize - i - 1, formatInfoBits[i] == 1 ,pixelSize)
-				outputGroupMaskOut(8, moduleSize-i-1, formatInfoBits, i)
+				outputGroupMaskOut(8, moduleSize-i-1, formatInfoBits, i, cons.FormatPart)
 			}
 		} else {
 			// 7-14
 			//out.WriteModule(moduleSize - (15 - i), 8 , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(moduleSize-(15-i), 8, formatInfoBits, i)
+			outputGroupMaskOut(moduleSize-(15-i), 8, formatInfoBits, i, cons.FormatPart)
 			y := 15 - i
 			if y <= 6 {
 				y--
 			}
 			//out.WriteModule(8, y , formatInfoBits[i] == 1 ,pixelSize)
-			outputGroupMaskOut(8, y, formatInfoBits, i)
+			outputGroupMaskOut(8, y, formatInfoBits, i, cons.FormatPart)
 		}
 	}
 }
@@ -620,15 +620,15 @@ func drawQRCodeFormatInformation(level int, moduleSize int, outputGroupMaskOut f
 // The format information is a 15-bit sequence contaning 5 data bits,with 10 error correction bits calculated using the
 //  (15,5) BCH code. The first three data bits contain the symbol number(in binary). which identifies the version
 //   and error correction level, as shown in Table 13.
-func drawMicroQRCodeFormatInformation(version model.VersionId, level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int)) {
+func drawMicroQRCodeFormatInformation(version model.VersionId, level int, moduleSize int, outputGroupMaskOut func(x int, y int, maskBits map[int][]util.Bit, maskBitIdx int, part cons.QRCodeStructPart)) {
 	var formatInfoBits = cons.MicroQRCodeFormatInformationBitsMap[version][level]
 	for i := 0; i < 15; i++ {
 		if i < 8 {
 			// h: 14 - 7
-			outputGroupMaskOut(1+i, model.FINDER_PATTERN_MODULE_SIZE+1, formatInfoBits, i)
+			outputGroupMaskOut(1+i, model.FINDER_PATTERN_MODULE_SIZE+1, formatInfoBits, i, cons.FormatPart)
 		} else {
 			// w:  0 - 6
-			outputGroupMaskOut(model.FINDER_PATTERN_MODULE_SIZE+1, 15-i, formatInfoBits, i)
+			outputGroupMaskOut(model.FINDER_PATTERN_MODULE_SIZE+1, 15-i, formatInfoBits, i, cons.FormatPart)
 		}
 	}
 }
@@ -651,7 +651,7 @@ func drawMicroQRCodeFormatInformation(version model.VersionId, level int, module
 // 9  10 11			...
 // 12 13 14
 // 15 16 17
-func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, val bool)) {
+func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, val bool, part cons.QRCodeStructPart)) {
 	version := qr.Version.Id
 	if version < 7 {
 		return
@@ -662,17 +662,17 @@ func drawVersionInformation(qr *QRCodeStruct, outputGroupOut func(x int, y int, 
 		for col := 0; col < 6; col++ {
 			// bottom_left
 			//out.WriteModule(col, moduleSize - 8 - 3 + row , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(col, moduleSize-8-3+row, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1)
+			outputGroupOut(col, moduleSize-8-3+row, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1, cons.VersionPart)
 			// top_right
 			//out.WriteModule(moduleSize - 8 - 3 + row, col , versionInfoBits[ col * 3 + row] == 1 ,pixelSize)
-			outputGroupOut(moduleSize-8-3+row, col, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1)
+			outputGroupOut(moduleSize-8-3+row, col, versionInfoBits[cons.VersionInformationBitsLen-1-(col*3+row)] == 1, cons.VersionPart)
 		}
 	}
 }
 
 // drawData : draw data and set mask.
 // Mask rule in Page 58,7.8 Data Masking.
-func drawData(version *model.Version, moduleSize int, codewordsBits []util.Bit, out output.Output, outputGroupOutMask func(x int, y int, val bool, hasMask bool)) {
+func drawData(version *model.Version, moduleSize int, codewordsBits []util.Bit, out output.Output, outputGroupOutMask func(x int, y int, val bool, hasMask bool, part cons.QRCodeStructPart)) {
 	var moduleBitIdx int
 	for pos := range iterateModulesPlacement(version, moduleSize, out.IsModuleSet) {
 		var bit bool
@@ -680,7 +680,7 @@ func drawData(version *model.Version, moduleSize int, codewordsBits []util.Bit, 
 			bit = codewordsBits[moduleBitIdx] == 1
 		}
 		//out.WriteModule(pos.X ,pos.Y ,bit,pixelSize)
-		outputGroupOutMask(pos.X, pos.Y, bit, true)
+		outputGroupOutMask(pos.X, pos.Y, bit, true, cons.DataPart)
 		moduleBitIdx++
 	}
 }

@@ -26,6 +26,9 @@ const (
 	NONE ErrorCorrectionLevel = -1 //-1
 )
 
+// QRCodeStructPart For example: alignmentPattern, FinderPattern...
+type QRCodeStructPart = int
+
 type ModeType = string
 
 const (
@@ -38,6 +41,15 @@ const (
 	Fnc1ModeP2           ModeType = "FNC1_P2"
 	KanjiMode            ModeType = "Kanji"
 	StructuredAppendMode ModeType = "Structured Append"
+
+	// QRCodeStructPart
+	DataPart          QRCodeStructPart = 0
+	FinderPatternPart QRCodeStructPart = 1
+	AlignmentPart     QRCodeStructPart = 2
+	QuietZonePart     QRCodeStructPart = 3
+	TimingPatternPart QRCodeStructPart = 4
+	FormatPart        QRCodeStructPart = 5
+	VersionPart       QRCodeStructPart = 6
 )
 
 type Format = string

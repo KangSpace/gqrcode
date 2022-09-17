@@ -75,9 +75,9 @@ func (km *KanjiMode) IsSupport(data string) bool {
 	}
 	loop := dataLen / 2
 	for i := 0; i < loop; i++ {
-		twoByteInt := <-util.IteratorTwoByte(data)
-		if !(is8140To9FFC(twoByteInt)) &&
-			!(isE040ToEBBF(twoByteInt)) {
+		char := <-util.IteratorStringByte(data)
+		if !(is8140To9FFCChar(char)) &&
+			!(isE040ToEBBFChar(char)) {
 
 			return false
 		}
@@ -85,9 +85,18 @@ func (km *KanjiMode) IsSupport(data string) bool {
 	return true
 }
 
-func is8140To9FFC(twoByteInt uint16) bool {
-	return hex8140 <= twoByteInt && twoByteInt <= 0x9FFC
+func is8140To9FFC(char uint16) bool {
+	return hex8140 <= char && char <= 0x9FFC
 }
-func isE040ToEBBF(twoByteInt uint16) bool {
-	return hexE040 <= twoByteInt && twoByteInt <= 0xEBBF
+
+func is8140To9FFCChar(char rune) bool {
+	return hex8140 <= char && char <= 0x9FFC
+}
+
+func isE040ToEBBF(char uint16) bool {
+	return hexE040 <= char && char <= 0xEBBF
+}
+
+func isE040ToEBBFChar(char rune) bool {
+	return hexE040 <= char && char <= 0xEBBF
 }

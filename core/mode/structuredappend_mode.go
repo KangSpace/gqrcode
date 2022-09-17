@@ -11,7 +11,6 @@ package mode
 // 1. Structured Append mode is not available for Micro QR Code Symbol.
 //
 
-
 type StructuredAppend struct {
 	*AbstractMode
 }

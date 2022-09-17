@@ -14,7 +14,7 @@ import (
 // 1. Byte mode is not available in Version M1 or M2 Micro QR Code Symbol.
 // 2. Byte mode max capacity is 2953
 
-const ByteRegExpType = "^.*$"
+const ByteRegExpType = ".*"
 
 type ByteMode struct {
 	*AbstractMode

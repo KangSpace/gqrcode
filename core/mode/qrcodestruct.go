@@ -2,9 +2,7 @@ package mode
 
 import (
 	"errors"
-	"fmt"
 	"github.com/KangSpace/gqrcode/core/cons"
-	"github.com/KangSpace/gqrcode/core/logger"
 	"github.com/KangSpace/gqrcode/core/model"
 	"github.com/KangSpace/gqrcode/core/output"
 	"io"
@@ -139,7 +137,7 @@ func (qr *QRCodeStruct) EncodeToBase64(out output.Output) (base64Str string, err
 }
 
 func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output, err error) {
-	defer func() {
+	/*defer func() {
 		if rec := recover(); rec != nil {
 			switch x := rec.(type) {
 			case string:
@@ -151,7 +149,7 @@ func (qr *QRCodeStruct) innerEncode(out output.Output) (out_ output.Output, err 
 			}
 			logger.Error(err)
 		}
-	}()
+	}()*/
 	return qr.buildQRCode(out), nil
 }
 

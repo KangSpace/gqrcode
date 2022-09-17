@@ -7,7 +7,7 @@ import (
 
 // Define log handle here
 
-func Warn(msg interface{}){
+func Warn(msg interface{}) {
 	fmt.Println("[WARN]", msg)
 }
 
@@ -15,8 +15,8 @@ func Info(msg interface{}) {
 	fmt.Println("[INFO]", msg)
 }
 
-func Error(msg interface{}){
-	if _,ok:= msg.(error); ok {
+func Error(msg interface{}) {
+	if _, ok := msg.(error); ok {
 		for i := 1; ; i++ {
 			pc, file, line, ok := runtime.Caller(i)
 			if !ok {
@@ -24,10 +24,10 @@ func Error(msg interface{}){
 			}
 			f := runtime.FuncForPC(pc)
 			if f.Name() != "runtime.main" && f.Name() != "runtime.goexit" {
-				fmt.Printf("[ERROR] %s %s (%d) %s \n",file,f.Name(), line, msg)
+				fmt.Printf("[ERROR] %s %s (%d) %s \n", file, f.Name(), line, msg)
 			}
 		}
-	}else{
+	} else {
 		fmt.Println("[ERROR] ", msg)
 	}
 }

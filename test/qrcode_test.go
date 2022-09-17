@@ -373,12 +373,15 @@ func TestByteQRCode(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// TestByteQRCodeWithColor :Test byte(IOS-8859-1) QRCode
 func TestByteQRCodeWithColor(t *testing.T) {
-	data := "https://kangspace.org"
+	//data := "https://kangspace.org"
+	data := "是你让我看透生命这东西，四个字“坚持到底”……看那扑翅的飞蛾，不顾一切地朝着灯光的方向扑去;看那缓缓的蜗牛，不变地朝着一个目标“金字塔顶”而坚持。\n　　李白看到了“只要功夫深铁杵磨成针”他成为了诗之仙，文飞剑舞。\n　　司马迁懂得生死如鸿毛、如泰山，沿着泰山攀爬，才能成就大事业。正应了那句“世上无难事，只要肯攀登”，他成就了那部伟大的《史记》，汗青留名，永垂不朽。\n　　爱迪生，仅发明灯泡就让他失败了3000多次。然而，他没有放弃，宁愿“在大海中捞针”，也要坚持不懈。最终，他成功了，他的名字同“光明”刻在了一起。就是一样的精神，使它成为了发明大王。\n　　库提斯，仅有上半身，而当你看到他是怎样幸福地生活、怎样灵巧地行走、怎样地游着滑板到演讲台上时，你便会知道一个强壮、坚强、执着、顽强的励志大师是可以这样成功的。\n　　古今中外，名人志士、成功人士，有多少的人共同验证着这样一句话：“成功就是坚持到底”。路是人走出来的，没有比脚更长的路。坚持沿着自己的路走下去，便会有意想不到的成功、收获。\n　　眺望远方，因为有梦想，所以追求。流水潺潺，水滴石穿。人生有道，天道酬勤。骐骥一跃，不能十步;驽马十驾，功在不舍。锲而舍之，朽木不折;锲而不舍，金石可镂。将执着的追求进行到底，没有比脚更长的路。"
 	fmt.Println(len(data))
 	fileNamePrefix := "byte_color"
-	fileName := gqrcodePath + fileNamePrefix + ".gif"
-	out := output.NewOutput(&output.BaseOutput{Type: output.PNG, Size: 400, CodeColor: output.BlueCodeColor})
+	fileName := gqrcodePath + fileNamePrefix + ".png"
+	out := output.NewOutput(&output.BaseOutput{Type: output.PNG, Size: 800, CodeColor: output.ColorfulCodeColor})
 	qrcode, err := gqrcode.NewQRCodeAutoQuiet(data)
 	if err != nil {
 		t.Fatal(err)

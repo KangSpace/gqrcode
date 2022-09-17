@@ -193,6 +193,18 @@ func IteratorTwoByte(data string) <-chan uint16 {
 	return twoByteChain
 }
 
+// IteratorStringByte : iterate by rune
+func IteratorStringByte(data string) <-chan rune {
+	byteChain := make(chan rune)
+	go func() {
+		for _, char := range data {
+			byteChain <- char
+		}
+		close(byteChain)
+	}()
+	return byteChain
+}
+
 func IteratorTwoByteEach(data string) <-chan []uint16 {
 	dataLen := len(data)
 	if dataLen%2 > 0 {

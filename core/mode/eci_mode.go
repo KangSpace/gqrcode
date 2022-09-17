@@ -13,7 +13,6 @@ package mode
 // --- ECI Designator(8,16 or 24 bits)
 //
 
-
 type ECI struct {
 	*AbstractMode
 }

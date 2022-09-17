@@ -3,6 +3,7 @@ package output
 import (
 	"bytes"
 	"errors"
+	"github.com/KangSpace/gqrcode/core/cons"
 	"github.com/KangSpace/gqrcode/core/model"
 	"github.com/KangSpace/gqrcode/util"
 	"github.com/KangSpace/gqrcode/util/imaging"
@@ -83,22 +84,39 @@ func (out *ImageOutput) Init(version *model.Version, qz *model.QuietZone) {
 
 // Write : write data
 func (out *ImageOutput) Write(x int, y int, black bool) {
-	setColor := out.getWriteColor(black)
+	setColor := out.getWriteColor(black, cons.DataPart)
 	out.image.Set(x, y, setColor)
 	out.modules[x][y] = &black
 }
 
 // WriteModule : write data
-func (out *ImageOutput) WriteModule(x int, y int, black bool, pixelSize int) {
-	setColor := out.getWriteColor(black)
+func (out *ImageOutput) WriteModule(x int, y int, black bool, pixelSize int, part cons.QRCodeStructPart) {
+	setColor := out.getWriteColor(black, part)
 	out.WriteModuleColor(x, y, black, setColor, pixelSize)
 }
 
 // getWriteColor: get color by BaseOutput.CodeColor
-func (out *ImageOutput) getWriteColor(black bool) color.Color {
+func (out *ImageOutput) getWriteColor(black bool, part cons.QRCodeStructPart) color.Color {
 	if black {
 		if out.BaseOutput.CodeColor.DataColor != nil {
-			return out.BaseOutput.CodeColor.DataColor
+			var color = image.Black.C
+			switch part {
+			case cons.DataPart:
+				color = out.BaseOutput.CodeColor.DataColor
+			case cons.FinderPatternPart:
+				color = out.BaseOutput.CodeColor.FinderPatternColor
+			case cons.AlignmentPart:
+				color = out.BaseOutput.CodeColor.AlignmentPatternColor
+			case cons.QuietZonePart:
+				color = out.BaseOutput.CodeColor.QuietZoneColor
+			case cons.TimingPatternPart:
+				color = out.BaseOutput.CodeColor.TimingPatternColor
+			case cons.FormatPart:
+				color = out.BaseOutput.CodeColor.FormatColor
+			case cons.VersionPart:
+				color = out.BaseOutput.CodeColor.VersionColor
+			}
+			return color
 		}
 		return image.Black.C
 	}

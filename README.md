@@ -75,6 +75,8 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
     qrcode, err := NewQRCode(data)   
     outFileName := "/opt/temp/numeric.png"
     if err == nil{
+        // set color for qrcode
+        // out := output.NewOutput(&output.BaseOutput{Type: output.PNG, Size: 400, CodeColor: output.ColorfulCodeColor})
         out := output.NewPNGOutput0()
         qrcode.Encode(out,outFileName)
     }
@@ -103,7 +105,11 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
   Create a new QRCode(Model2) by input data with auto-size Quiet Zone, default is 4x modules per side.
   
   e.g.:  
-![alphanumeric qrcode with auto quiet zone](doc/images/qr/alphanumeric_auto_quietzone.jpg)
+  ![alphanumeric qrcode with auto quiet zone](doc/images/qr/alphanumeric_auto_quietzone.jpg)
+
+  QRCode with color:
+
+  ![byte_colorful_200x200.png](doc/images/qr/byte_colorful_200x200.png)
 
 
 * [NewMicroQRCode(content string) (*mode.QRCodeStruct,error)](qrcode.go)
@@ -111,7 +117,7 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
   Create a new Micro QRCode by input data.
   
   e.g.:  
-![numeric qrcode](doc/images/qr/numeric_micro_qrcode5.png)
+  ![numeric qrcode](doc/images/qr/numeric_micro_qrcode5.png)
 
 
 * [NewMicroQRCodeAutoQuiet(content string) (*mode.QRCodeStruct,error)](qrcode.go)
@@ -119,7 +125,7 @@ Micro QRCode supports 4 character modes, and 4 versions with 4 Error correction 
   Create a new Micro QRCode by input data with auto-size Quiet Zone, default is 2x modules per side.
   
   e.g.:    
-![byte_micro qrcode with auto quiet zone](doc/images/qr/byte_micro_qrcode15.png)
+  ![byte_micro qrcode with auto quiet zone](doc/images/qr/byte_micro_qrcode15.png)
 
 
 * [NewQRCode0(content string,format cons.Format,ec *mode.ErrorCorrection,m mode.Mode,quietZone *model.QuietZone) (qr *mode.QRCodeStruct,err error)](qrcode.go)
@@ -248,8 +254,8 @@ All QRCode test in [qrcode_test.go](test/qrcode_test.go) and [micro_qrcode_test.
             <td rowspan="3">
                 Output
             </td>
-            <td>Image File</td>
-            <td>2021-05-30</td>
+            <td>Image File<br/>(With Color)</td>
+            <td>2021-05-30<br/>(2022-09-17)</td>
         </tr>
         <tr >
             <td>Base64 String</td>

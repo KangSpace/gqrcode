@@ -11,7 +11,6 @@ package mode
 // 1. FNC1 mode is not available for Micro QR Code Symbol.
 //
 
-
 type FNC1 struct {
 	*AbstractMode
 }

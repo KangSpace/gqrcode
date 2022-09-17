@@ -13,32 +13,31 @@ import (
 
 func TestChar(t *testing.T) {
 	data := "A"
-	fmt.Printf("data:%s,data[:1]:%s, data[0]:%s \n",data,data[:1],data[0:])
+	fmt.Printf("data:%s,data[:1]:%s, data[0]:%s \n", data, data[:1], data[0:])
 	data = "AB"
-	fmt.Printf("data:%s,data[:1]:%s, data[0]:%s \n",data,data[:1],data[0:])
+	fmt.Printf("data:%s,data[:1]:%s, data[0]:%s \n", data, data[:1], data[0:])
 }
 
 func TestByte(t *testing.T) {
 	data := "A"
-	fmt.Printf("data:%d \n",data[0])
-	fmt.Println("data:" + string( data[0]))
+	fmt.Printf("data:%d \n", data[0])
+	fmt.Println("data:" + string(data[0]))
 }
 func TestKanji(t *testing.T) {
 	data := "0日月"
-	if a ,err:=ToShiftJIS(data);err!= nil{
+	if a, err := ToShiftJIS(data); err != nil {
 		t.Fatal(err)
-	}else{
+	} else {
 		//aaa,err:= FromShiftJIS(a)
-		aaa:=strconv.Quote(a)
-		for _,v:= range strings.Split(aaa[1:len(aaa)-1],"\\x"){
+		aaa := strconv.Quote(a)
+		for _, v := range strings.Split(aaa[1:len(aaa)-1], "\\x") {
 			fmt.Printf("aaa:%v\n", v)
 		}
 	}
 
-
 }
 
-func transformEncoding( rawReader io.Reader, trans transform.Transformer) (string, error) {
+func transformEncoding(rawReader io.Reader, trans transform.Transformer) (string, error) {
 	ret, err := ioutil.ReadAll(transform.NewReader(rawReader, trans))
 	if err == nil {
 		return string(ret), nil

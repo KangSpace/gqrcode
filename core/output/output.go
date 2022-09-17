@@ -1,6 +1,7 @@
 package output
 
 import (
+	"github.com/KangSpace/gqrcode/core/cons"
 	"github.com/KangSpace/gqrcode/core/model"
 	"image"
 	"image/color"
@@ -44,24 +45,34 @@ type BaseOutput struct {
 
 // CodeColor color for qrcode
 type CodeColor struct {
-	AlignmentColor     color.Color
-	TimingPatternColor color.Color
-	QuietZoneColor     color.Color
-	DataColor          color.Color
+	FinderPatternColor    color.Color
+	AlignmentPatternColor color.Color
+	TimingPatternColor    color.Color
+	QuietZoneColor        color.Color
+	DataColor             color.Color
+	FormatColor           color.Color
+	VersionColor          color.Color
 }
 
 //
 var (
+	BlackColor = image.Black
+	BlueColor  = color.NRGBA{0, 127, 255, 255}
+	RedCode    = color.NRGBA{255, 82, 25, 255}
+	OrangeCode = color.NRGBA{255, 146, 0, 255}
+	GreenCode  = color.NRGBA{0, 176, 66, 255}
 	// DefaultCodeColor default color is black for QRCode
-	DefaultCodeColor = CodeColor{image.Black, image.Black, image.White, image.Black}
+	DefaultCodeColor = CodeColor{BlackColor, BlackColor, BlackColor, image.White, BlackColor, BlackColor, BlackColor}
 	// BlueCodeColor #007FFF/rgba(0,127,255,1)
-	BlueCodeColor = CodeColor{color.RGBA{0, 127, 255, 1}, color.RGBA{0, 127, 255, 1}, image.White, color.RGBA{0, 127, 255, 1}}
+	BlueCodeColor = CodeColor{BlueColor, BlueColor, BlueColor, image.White, BlueColor, BlueColor, BlueColor}
 	// RedCodeColor #FF5219/rgba(255,82,25,1)
-	RedCodeColor = CodeColor{color.RGBA{255, 82, 25, 1}, color.RGBA{255, 82, 25, 1}, image.White, color.RGBA{255, 82, 25, 1}}
+	RedCodeColor = CodeColor{RedCode, RedCode, RedCode, image.White, RedCode, RedCode, RedCode}
 	// OrangeCodeColor #FF9200/rgba(255,146,0,1)
-	OrangeCodeColor = CodeColor{color.RGBA{255, 146, 0, 1}, color.RGBA{255, 146, 0, 1}, image.White, color.RGBA{255, 146, 0, 1}}
+	OrangeCodeColor = CodeColor{OrangeCode, OrangeCode, OrangeCode, image.White, OrangeCode, OrangeCode, OrangeCode}
 	// GreenCodeColor #00B042/rgba(0,176,66,1)
-	GreenCodeColor = CodeColor{color.RGBA{0, 176, 66, 1}, color.RGBA{0, 176, 66, 1}, image.White, color.RGBA{0, 176, 66, 1}}
+	GreenCodeColor = CodeColor{GreenCode, GreenCode, GreenCode, image.White, GreenCode, GreenCode, GreenCode}
+	// ColorfulCodeColor MultiColor for QRCodeStruct Part
+	ColorfulCodeColor = CodeColor{DefaultCodeColor.DataColor, RedCodeColor.DataColor, GreenCodeColor.DataColor, image.White, BlueCodeColor.DataColor, OrangeCodeColor.DataColor, DefaultCodeColor.DataColor}
 )
 
 // LogoOption :  Option for add logo image at center of QRCode
@@ -98,7 +109,7 @@ type Output interface {
 	Init(version *model.Version, qz *model.QuietZone)
 	Write(x int, y int, black bool)
 	// WriteModule :write per module by pixelSize
-	WriteModule(x int, y int, black bool, pixelSize int)
+	WriteModule(x int, y int, black bool, pixelSize int, part cons.QRCodeStructPart)
 	WriteModuleColor(x int, y int, dark bool, setColor color.Color, pixelSize int)
 	// IsModuleSet : check the module whether or not be set
 	IsModuleSet(x int, y int) bool
